@@ -5,6 +5,7 @@ import { appWriteConfig } from "../appwrite/config";
 import { parseStringify } from "../utils";
 import { Query, ID } from "node-appwrite";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export const handleError = async (error: unknown, message: string) => {
   console.log(error, message);
@@ -36,13 +37,15 @@ export const sendEmailOTP = async ({ email }: { email: string }) => {
 
   try {
     const session = await account.createEmailToken(ID.unique(), email);
-    return session.accountId;
+
+    return session.userId;
   } catch (error) {
     handleError(error, "Failed to send Email OTP");
   }
 };
 
 export const createAccount = async ({ fullName, email }: { fullName: string; email: string }) => {
+
   if (!fullName || typeof fullName !== "string") {
     throw new Error("Invalid User name");
   }
@@ -82,11 +85,14 @@ export const verifyOTP = async ({ accountId, password }: { accountId: string; pa
 
     const session = await account.createSession(accountId.toString(), password.toString());
 
+    const expires = new Date(); 
+    expires.setFullYear(expires.getFullYear() + 1);
     (await cookies()).set("appwrite-session", session.secret, {
       path: "/",
       httpOnly: true,
       sameSite: "strict",
       secure: true,
+      expires: expires
     });
 
     return parseStringify({ sessionId: session.$id });
@@ -137,3 +143,30 @@ export const signInUser = async ({ email }: { email: string }) => {
     throw error;
   }
 };
+
+export const getAllUsers = async ()=>{
+  try {
+    const {databases} = await serverAction();
+
+    const result = await databases.listDocuments(
+      appWriteConfig.databaseId,
+      appWriteConfig.usersCollectionsId,
+    )
+
+    return result.documents
+  } catch (error) {
+    console.log("Error:"+ error.message)
+  }
+}
+
+export const signOutUser = async () => {
+  const { account } = await createSessionClient();
+
+  try {
+    await account.deleteSession("current");
+    (await cookies()).delete("appwrite-session");
+    redirect("/")
+  } catch (error) {
+    handleError(error, "Failed to sign out user");
+  }
+}

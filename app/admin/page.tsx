@@ -1,6 +1,14 @@
-import Admin from '@/components/Admin'
+import Admin from '@/components/Admin';
+import { fetchUserDetails } from '@/lib/serverAction'
+import { redirect } from 'next/navigation';
 import React from 'react'
 
-const page = () => <Admin/>
+const page = () =>{
+  const currentUser = fetchUserDetails();
+  if(!currentUser){
+    redirect("/signUp")
+  }
+  return <Admin/>
+}
 
 export default page

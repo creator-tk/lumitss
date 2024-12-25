@@ -63,7 +63,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="auth-form bg-white">
-          <h1 className="font-bold md:text-left text-[3vw]">
+          <h1 className="font-bold md:text-left lg:text-[3vw] text-[3vh]">
             {type === "signIn" ? "Sign In" : "Sign Up"}
           </h1>
 

@@ -1,5 +1,7 @@
 "use server"
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { getAllUsers, getCurrentUser } from "./actions/user.action";
 
 /**
  * Sets a cookie on the server.
@@ -38,3 +40,20 @@ export const getServerCookie = async (name: string): string | undefined => {
 export const deleteServerCookie = async (name: string) => {
   await cookies().delete(name);
 };
+
+export const fetchUserDetails = async ()=>{
+  const session = await getServerCookie("appwrite-session");
+  if(session){
+    const user = await getCurrentUser();
+    if(user.role !== "admin"){
+      redirect("/")
+    }
+  }else{
+    redirect("/signUp")
+  }
+}
+
+export const fetchAllUsers = async ()=>{
+  const result = await getAllUsers();
+  return result;
+}

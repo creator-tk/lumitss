@@ -43,7 +43,9 @@ const OTPModel = ({ email, accountId }: { email: string; accountId: string }) =>
   };
 
   const handleResendOtp = async () => {
+    setLoading(true);
     await sendEmailOTP({email});
+    setLoading(false);
   };
 
   return (
@@ -76,7 +78,7 @@ const OTPModel = ({ email, accountId }: { email: string; accountId: string }) =>
               {loading ? "Verifying..." : "Verify OTP"}
             </AlertDialogAction>
 
-            <Button type="button" onClick={handleResendOtp} variant="link">
+            <Button type="button" onClick={handleResendOtp} variant="link" className={`${loading && "cursor-not-allowed"}`} disabled={loading}>
               Resend OTP
             </Button>
           </div>
