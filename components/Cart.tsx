@@ -72,7 +72,7 @@ const Cart = () => {
         await placeOrder({
           location: currentUserAddress.location,
           products: [productId],
-          quantity: quantity[productId],
+          quantity: quantity,
         });
         toast({
           title: "Order Placed Successfully",
@@ -102,7 +102,7 @@ const Cart = () => {
         cartProducts.map((product) => (
           <div
             key={product.$id}
-            className="flex flex-col lg:flex-row shadow-md p-4 gap-4 my-4 rounded-lg bg-white lg:items-center items-start"
+            className="flex flex-col md:flex-row shadow-md p-4 gap-4 my-4 rounded-lg bg-white md:items-center items-start"
           >
             <Image
               src={product.image}
@@ -110,14 +110,14 @@ const Cart = () => {
               width={200}
               height={200}
               unoptimized={true}
-              className="rounded-lg overflow-hidden w-full max-w-[200px] h-auto lg:w-[200px] lg:h-[200px] mx-auto lg:mx-0"
+              className="rounded-lg overflow-hidden w-full max-w-[200px] h-auto md:w-[200px] md:h-[200px] mx-auto lg:mx-0"
             />
-            <div className="flex flex-col gap-3 lg:gap-2 py-2 lg:py-3 w-full lg:w-auto">
+            <div className="flex flex-col gap-3 md:gap-2 py-2 md:py-3 w-full md:w-auto">
               <div>
-                <p className="text-lg lg:text-[1.5vw] font-medium text-gray-700">
+                <p className="text-lg md:text-[1.5vw] font-medium text-gray-700">
                   {product.productDetails}
                 </p>
-                <div className="flex flex-col lg:flex-row lg:gap-4 mt-2">
+                <div className="flex flex-col md:flex-row md:gap-4 mt-2">
                   <p className="text-gray-800 font-semibold">
                     Offer Price: {product.price}/-
                   </p>
@@ -141,17 +141,17 @@ const Cart = () => {
                   }}
                 />
               </div>
-              <div className="flex flex-col lg:flex-row gap-3 lg:gap-4 mt-2">
+              <div className="flex flex-col md:flex-row gap-3 md:gap-4 mt-2">
                 <ActionButton
                   action="remove"
                   id={product.$id}
                   style="bg-transparent text-black border border-gray-500 hover:bg-black hover:text-white py-2 px-4 rounded"
-                  className="w-full lg:w-auto"
+                  className="w-full md:w-auto"
                 />
                 <Button
                   onClick={() => handleOrderClick(product.$id)}
                   disabled={actionLoading[product.$id]}
-                  className={`bg-blue-600 text-white hover:bg-blue-700 py-2 px-4 rounded lg:w-[100%] ${
+                  className={`bg-blue-600 text-white hover:bg-blue-700 py-2 px-4 rounded md:w-[100%] ${
                     actionLoading[product.$id] ? "cursor-not-allowed" : ""
                   }`}
                 >
