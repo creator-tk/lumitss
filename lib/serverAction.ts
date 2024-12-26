@@ -45,7 +45,10 @@ export const fetchUserDetails = async ()=>{
   const session = await getServerCookie("appwrite-session");
   if(session){
     const user = await getCurrentUser();
-    if(user.role !== "admin"){
+    if(!user){
+      redirect("/signUp")
+    }
+    if(user?.role !== "admin"){
       redirect("/")
     }
   }else{

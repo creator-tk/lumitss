@@ -8,15 +8,24 @@ import AddProduct from './AddProduct';
 import { Button } from './ui/button';
 import { fetchUserDetails } from '@/lib/serverAction';
 
-const Admin_Products = () => {
-  const [loading, setLoading] = useState(false);
-  const [products, setProducts] = useState([]);
-  const [addField, setAddField] = useState(false);
-  const [fieldName, setFieldName] = useState('Add');
-  const [productId, setProductId] = useState('');
+// Define the Product interface
+interface Product {
+  $id: string;
+  image: string;
+  productName: string;
+  price: number;
+  productDetails: string;
+  category: string;
+}
 
+const Admin_Products: React.FC = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [addField, setAddField] = useState<boolean>(false);
+  const [fieldName, setFieldName] = useState<string>('Add');
+  const [productId, setProductId] = useState<string>('');
 
-  const productState = (prop) => {
+  const productState = (prop: string) => {
     setAddField(true);
     setFieldName(prop);
   };
@@ -24,7 +33,7 @@ const Admin_Products = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await fetchUserDetails()
+      await fetchUserDetails();
       const result = await getAllProducts();
       setProducts(result);
       setLoading(false);
@@ -33,7 +42,7 @@ const Admin_Products = () => {
     fetchData();
   }, [fieldName]);
 
-  const addProductToList = (newProduct) => {
+  const addProductToList = (newProduct: Product) => {
     setProducts((prevProducts) => [...prevProducts, newProduct]);
     setAddField(false); 
   };
@@ -64,8 +73,8 @@ const Admin_Products = () => {
           <p className='text-center text-gray-300'>No products found!</p>
         )}
         {!loading && products.length > 0 && (
-          products.map(product => (
-            <ul key={product.$id} className='grid grid-cols-11 gap-2  items-center p-2'>
+          products.map((product) => (
+            <ul key={product.$id} className='grid grid-cols-11 gap-2 items-center p-2'>
               <li className='col-span-2 truncate'>
                 <Image
                   src={product.image}

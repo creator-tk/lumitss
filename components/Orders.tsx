@@ -1,16 +1,37 @@
-import React from 'react'
-import { getProducts } from '@/lib/actions/product.action'
+import React from 'react';
+import { getProducts } from '@/lib/actions/product.action';
 import Image from 'next/image';
 import { formateDateTime } from '@/lib/utils';
 
-const Orders = async () => {
-  const orderedProducts = await getProducts('orders');
+interface Product {
+  $id: string;
+  image: string;
+  productName: string;
+  productDetails: string;
+  price: number;
+}
+
+interface OrderDetail {
+  quantity: number;
+  orderStatus: string;
+  orderDate: string;
+}
+
+interface OrderedProducts {
+  orderedItems: Product[];
+  orderDetails: OrderDetail[];
+}
+
+const Orders: React.FC = async () => {
+  const orderedProducts: OrderedProducts = await getProducts('orders');
+
+  console.log(orderedProducts);
 
   if (!orderedProducts) return <p>No Orders yet</p>;
 
   const { orderedItems, orderDetails } = orderedProducts;
 
-  if (!orderedItems?.length) return <p>No Orders </p>;
+  if (!orderedItems?.length) return <p>No Orders</p>;
 
   return (
     <div>

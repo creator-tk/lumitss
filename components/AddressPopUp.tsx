@@ -20,15 +20,25 @@ import { useToast } from "@/hooks/use-toast";
 import { placeOrder } from "@/lib/actions/product.action";
 import { useRouter } from "next/navigation";
 
+// Define the address type
+interface Address {
+  country: string;
+  phone: string;
+  area: string;
+  pincode: string;
+  street: string;
+  landmark: string;
+}
+
 interface AddressPopUpProps {
   isOpen: boolean;
   onClose: () => void;
   productId: string;
 }
 
-const AddressPopUp = ({ isOpen, onClose, productId }: AddressPopUpProps) => {
+const AddressPopUp: React.FC<AddressPopUpProps> = ({ isOpen, onClose, productId }) => {
 
-  const [address, setAddress] = useState({
+  const [address, setAddress] = useState<Address>({
     country: "",
     phone: "",
     area: "",
@@ -36,7 +46,7 @@ const AddressPopUp = ({ isOpen, onClose, productId }: AddressPopUpProps) => {
     street: "",
     landmark: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const route = useRouter();
   const {toast} = useToast();
@@ -56,24 +66,25 @@ const AddressPopUp = ({ isOpen, onClose, productId }: AddressPopUpProps) => {
     }));
   };
 
-  const handlePlaceOrder = async (e:React.FormEvent<HTMLFormElement>) => {
+  const handlePlaceOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
-    const addressString = JSON.stringify(address)
-    console.log("stringaddress from popup",addressString) 
+    const addressString = JSON.stringify(address);
+    console.log("stringaddress from popup", addressString);
     try {
-      const result = await placeOrder({location:addressString, products:[productId]});
-      console.log(result)
-      if(!result.success){
+      const result = await placeOrder({ location: addressString, products: [productId] });
+      console.log(result);
+      if (!result.success) {
         toast({
-          title:"Failded to process"
-        })
+          title: "Failed to process"
+        });
+      } else {
+        toast({
+          title: result.message,
+          description: "Your order got confirmed"
+        });
       }
-      toast({
-        title:result.message,
-        description:"Your order got confirmed"
-      })
 
       setAddress({
         country: "",
@@ -82,18 +93,18 @@ const AddressPopUp = ({ isOpen, onClose, productId }: AddressPopUpProps) => {
         pincode: "",
         street: "",
         landmark: "",
-      })
+      });
       onClose();
-      route.push("/user/orders")
+      route.push("/user/orders");
 
     } catch (error) {
-      console.log(error.message)
+      console.log((error as Error).message);
       toast({
-        title:'Failded to place order',
-        description:"Process Failded"
-      })
-    }finally{
-      setLoading(false)
+        title: 'Failed to place order',
+        description: "Process Failed"
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -191,7 +202,7 @@ const AddressPopUp = ({ isOpen, onClose, productId }: AddressPopUpProps) => {
             className="btn-class"
             disabled={loading}
           >
-            {loading?"Placing your order":"Place Order"}
+            {loading ? "Placing your order" : "Place Order"}
           </Button>
         </form>
       </DialogContent>

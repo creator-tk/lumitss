@@ -28,56 +28,80 @@ export const getAllProducts = async () => {
 
 
 //Add product in the database
-interface addProductProps{
-  name: string;
+interface AddProductProps {
+  productName: string;
   price: number;
-  description: string;
+  productDetails: string;
   category: string;
-  image: file;
+  image: File; // Accepts a File object
 }
 
-export const addProduct = async ({productName, price, productDetails, category, image}:addProductProps) =>{
-  const {storage,databases} = await serverAction();
+//
+export const addProduct = async ({
+  productName,
+  price,
+  productDetails,
+  category,
+  image
+}: AddProductProps) => {
+  const { storage, databases } = await serverAction();
   let uploadedImage;
-  try {
-    const inputFile =  InputFile.fromBuffer(image, image.name)
 
+  try {
+    // Convert the File to an InputFile object for Appwrite's storage
+    const inputFile = InputFile.fromBuffer(image, image.name);
+
+    // Upload the image to Appwrite Storage
     uploadedImage = await storage.createFile(
       appWriteConfig.bucketId,
       ID.unique(),
       inputFile
     );
 
+    // Construct the image URL using the uploaded image's ID
+    const imageUrl = constructImageUrl(uploadedImage.$id);
+
+ 
     const productDocument = {
       productName,
       price,
       productDetails,
       category,
-      image: constructImageUrl(uploadedImage.$id),
-      imageId: uploadedImage.$id
-    }
-    
+      image: imageUrl, // Image URL as a string
+      imageId: uploadedImage.$id, // Store the image ID for reference
+    };
+
+    // Insert the new product into the database
     const result = await databases.createDocument(
       appWriteConfig.databaseId,
       appWriteConfig.filesCollectionsId,
       ID.unique(),
       productDocument
-    )
-
-    return result;
-  } catch (error) {
-    if(uploadedImage){
-      await storage.deleteFile(
-      appWriteConfig.bucketId, uploadedImage.$id
     );
+
+    return {
+      success: true,
+      data: result,
+      message: "Product Added Successfully"
+    };
+
+  } catch (error) {
+    if (uploadedImage) {
+      await storage.deleteFile(appWriteConfig.bucketId, uploadedImage.$id);
     }
-    handleError(error, "Failded to add product")
+
+    handleError(error, "Failed to add product");
+    return {
+      success: false,
+      message: "Failed to add product"
+    };
   }
-}
+};
+
 //Added product in the databse
 
 
-export const addProductToCart = async (id) =>{
+export const addProductToCart = async (id: string): Promise<ActionResult> =>{
 
   const currentUser = await getCurrentUser();
 
@@ -109,16 +133,39 @@ export const addProductToCart = async (id) =>{
       }
     );
 
-    return "Product added to cart successfully";
+    return {
+      success:true,
+      message:"Product Add to the cart Successfully"
+    };
   } catch (error) {
-    console.log('Failed to add product to cart:', error.message);
+    console.log( error.message);
+    return{
+      success:false,
+      message:"Failded to add product to the cart"
+    }
   }
 }
 
 
-export const getProducts = async (specific, searchQuery) => {
-  const { databases } = await serverAction();
+// interface Product {
+//   $id: string;
+//   image: string;
+//   productName: string;
+//   price: string;
+// }
 
+interface ProductsResponse {
+  success: boolean;
+  data: Product[] | null;
+  message?: string;
+  searchResults?: Product[];
+  relatedProducts?: Product[];
+  orderedItems?: Product[];
+  orderDetails?: { orderDate: string; orderStatus: string; quantity: number }[];
+}
+
+export const getProducts = async (specific: string, searchQuery: string = ''): Promise<ProductsResponse> => {
+  const { databases } = await serverAction();
 
   try {
     if (specific === 'all') {
@@ -126,18 +173,29 @@ export const getProducts = async (specific, searchQuery) => {
         appWriteConfig.databaseId,
         appWriteConfig.filesCollectionsId
       );
-      return JSON.parse(JSON.stringify(result.documents));
+      return {
+        success: true,
+        data: JSON.parse(JSON.stringify(result.documents)) || [],
+      };
     } else if (specific === 'orders') {
       const currentUser = await getCurrentUser();
 
       if (!currentUser) {
-        return;
+        return {
+          success: false,
+          message: "User not found",
+          data: [], // Ensure a consistent return type (data is an array)
+        };
       }
 
       const orders = currentUser.orders ? JSON.parse(currentUser.orders) : [];
 
       if (orders.length === 0) {
-        return [];
+        return {
+          success: true,
+          orderedItems: [],
+          orderDetails: [],
+        };
       }
 
       const orderedItems = [];
@@ -158,20 +216,29 @@ export const getProducts = async (specific, searchQuery) => {
       );
 
       return {
-        orderedItems: orderedProducts.documents,
+        success: true,
+        orderedItems: orderedProducts.documents || [],
         orderDetails: orderDetails,
       };
     } else if (specific === 'cart') {
       const currentUser = await getCurrentUser();
 
       if (!currentUser) {
-        return;
+        return {
+          success: false,
+          message: "User not found",
+          data: [],
+        };
       }
 
       const cartData = currentUser.cart ? JSON.parse(currentUser.cart) : [];
 
       if (cartData.length === 0) {
-        return [];
+        return {
+          success: true,
+          message:"No products found",
+          data: [], 
+        };
       }
 
       const cartProducts = await databases.listDocuments(
@@ -179,14 +246,21 @@ export const getProducts = async (specific, searchQuery) => {
         appWriteConfig.filesCollectionsId,
         [Query.equal("$id", cartData)]
       );
-      return cartProducts.documents;
+      return {
+        success: true,
+        data: cartProducts.documents || [],
+        message:"data fetched Successfully"
+      };
     } else if (specific === 'search') {
-      
       if (!searchQuery || searchQuery.trim() === '') {
-        return [];
+        return {
+          success: false,
+          message: "Search query is empty",
+          searchResults: [],
+          relatedProducts: [],
+        };
       }
 
-      // Search for products matching the query
       const searchResults = await databases.listDocuments(
         appWriteConfig.databaseId,
         appWriteConfig.filesCollectionsId,
@@ -194,9 +268,11 @@ export const getProducts = async (specific, searchQuery) => {
       );
 
       if (searchResults.documents.length === 0) {
-        return{
-          searchResults:[],
-          relatedProducts:[]
+        return {
+          success: false,
+          message: "No products found",
+          searchResults: [],
+          relatedProducts: [],
         };
       }
 
@@ -206,32 +282,43 @@ export const getProducts = async (specific, searchQuery) => {
         [
           Query.equal(
             "category",
-            searchResults.documents[0].category // Assuming category is a field
+            searchResults.documents[0].category
           ),
         ]
       );
 
       return {
+        success: true,
         searchResults: searchResults.documents || [],
         relatedProducts: relatedProducts.documents || [],
       };
-    } else if (specific === "viewProduct"){
-
-      if(searchQuery === ''){
-        return {};
+    } else if (specific === "viewProduct") {
+      if (!searchQuery) {
+        return {
+          success: false,
+          message: "Product ID is required",
+          data: null, // Return null for missing data
+        };
       }
 
       const resultedProduct = await databases.listDocuments(
         appWriteConfig.databaseId,
         appWriteConfig.filesCollectionsId,
         [Query.equal("$id", searchQuery)]
-      )
+      );
 
-      return resultedProduct.documents[0];
+      return {
+        success: true,
+        data: resultedProduct.documents[0] || null, // Ensure valid data or null
+      };
     }
   } catch (error) {
     console.log('Failed to fetch products:', error.message);
-    throw error;
+    return {
+      success: false,
+      message: "Failed to fetch products",
+      data: [], // Ensure consistent empty data
+    };
   }
 };
 
@@ -269,24 +356,54 @@ export const removeProductFromCart = async (id) => {
       }
     );
 
-    return "Product removed from cart successfully";
+    return{ 
+      success:true,
+      message:"Product removed from cart successfully"};
   } catch (error) {
     console.log('Failed to remove product from cart:', error.message);
+    return{
+      success:false,
+      message:"Failded to remove"
+    }
   }
 }
 
 
 //Place Order functin started
-export const placeOrder = async ({location={}, products, quantity={} }) => {
+// interface PlaceOrderArgs {
+//   location: Address; 
+//   products: string[]; 
+//   quantity: Record<string, number>; 
+// }
 
+// interface PlaceOrderResult {
+//   message: string;
+//   success: boolean;
+// }
+
+interface Address {
+  country: string;
+  phone: string;
+  area: string;
+  pincode: string;
+  street: string;
+  landmark: string;
+}
+
+// interface User {
+//   $id: string;
+//   address: string;
+//   orders: string;
+// }
+
+export const placeOrder = async ({ location, products, quantity = {} }: { location: Address, products: string[], quantity?: Record<string, number> }) => {
   const currentUser = await getCurrentUser();
 
-  if(!currentUser){
+  if (!currentUser) {
     return;
   }
 
-
-  const {databases} = await serverAction();
+  const { databases } = await serverAction();
 
   try {
     const userDocument = await databases.getDocument(
@@ -296,7 +413,7 @@ export const placeOrder = async ({location={}, products, quantity={} }) => {
     );
 
     let currentUserAddress;
-    if(userDocument.address !== ""){
+    if (userDocument.address !== "") {
       currentUserAddress = userDocument.address ? JSON.parse(userDocument.address) : {};
     } else {
       currentUserAddress = location;
@@ -336,5 +453,7 @@ export const placeOrder = async ({location={}, products, quantity={} }) => {
     return { message: "Failed to process!", success: false };
   }
 };
+
+
 
 

@@ -19,6 +19,7 @@ import OTPModel from './OTPModel';
 
 type FormType = "signIn" | "signUp";
 
+// Define schema generator based on form type
 const authFormSchema = (formType: FormType) => {
   return z.object({
     email: z.string().email(),
@@ -26,14 +27,21 @@ const authFormSchema = (formType: FormType) => {
   });
 };
 
-const AuthForm = ({ type }: { type: FormType }) => {
+// Define form values type based on Zod schema
+type FormValues = z.infer<ReturnType<typeof authFormSchema>>;
+
+interface AuthFormProps {
+  type: FormType;
+}
+
+const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [accountId, setaccountId] = useState('');
+  const [accountId, setAccountId] = useState('');
 
   const formSchema = authFormSchema(type);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: "",
@@ -41,7 +49,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     setLoading(true);
     setErrorMessage('');
     try {
@@ -50,10 +58,10 @@ const AuthForm = ({ type }: { type: FormType }) => {
           ? await createAccount({ fullName: values.fullName || '', email: values.email })
           : await signInUser({ email: values.email });
 
-      setaccountId(user.accountId);
+      setAccountId(user.accountId);
     } catch (error) {
-      console.log(error.message);
-      setErrorMessage(`Failed to create Account. ${error.message}`);
+      console.log((error as Error).message);
+      setErrorMessage(`Failed to create Account. ${(error as Error).message}`);
     } finally {
       setLoading(false);
     }
@@ -73,7 +81,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>FullName</FormLabel>
+                  <FormLabel>Full Name</FormLabel>
                   <FormControl>
                     <Input placeholder="Full Name" {...field} required />
                   </FormControl>
@@ -90,7 +98,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter Your mail" {...field} required />
+                  <Input placeholder="Enter Your Email" {...field} required />
                 </FormControl>
                 <FormMessage />
               </FormItem>

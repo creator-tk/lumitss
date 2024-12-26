@@ -9,10 +9,16 @@ import { getCurrentUser } from "@/lib/actions/user.action";
 import { getServerCookie } from "@/lib/serverAction";
 import { useRouter } from "next/navigation";
 
-const Header = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+interface User {
+  fullName: string;
+  role: string;
+  [key: string]: unknown;
+}
+
+const Header: React.FC = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const router = useRouter();
 
   useEffect(() => {
@@ -36,7 +42,7 @@ const Header = () => {
   };
 
   return (
-    <header className="flex w-screen justify-between gap-6 px-8 lg:px-20 py-4 bg-gray-100 items-center sticky top-0">
+    <header className="flex w-screen justify-between gap-6 px-8 lg:px-20 py-4 bg-gray-100 items-center sticky top-0 z-10">
       <Link href="/">
         <Image
           src="/logo.png"
@@ -47,9 +53,8 @@ const Header = () => {
         />
       </Link>
 
-
       <div className="search_container w-[100%] flex items-center">
-      <Input
+        <Input
           placeholder="Search"
           type="text"
           className="search_input lg:w-auto w-[100%]"

@@ -1,11 +1,14 @@
-import Image from 'next/image'
-import React from 'react'
-import Link from 'next/link'
-import { fetchUserDetails } from '@/lib/serverAction'
+import Image from 'next/image';
+import React from 'react';
+import Link from 'next/link';
+import { fetchUserDetails } from '@/lib/serverAction';
 
-const layout = async ({children}:{children: React.ReactNode}) => {
+interface LayoutProps {
+  children: React.ReactNode;
+}
 
-  await fetchUserDetails()
+const Layout: React.FC<LayoutProps> = async ({ children }) => {
+  await fetchUserDetails();
 
   return (
     <div>
@@ -39,7 +42,7 @@ const layout = async ({children}:{children: React.ReactNode}) => {
       </header>
       {children}
     </div>
-  )
+  );
 }
 
-export default layout
+export default Layout;

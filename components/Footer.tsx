@@ -6,19 +6,25 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/user.action";
 import { getServerCookie } from "@/lib/serverAction";
 
-const Footer = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false)
+interface User {
+  fullName: string;
+  role: string;
+  [key: string]: unknown;
+}
+
+const Footer: React.FC = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
-      const session = await getServerCookie("appwrite-session")
+      const session = await getServerCookie("appwrite-session");
       if (session) {
         const userStatus = await getCurrentUser();
         setUser(userStatus);
       }
-      setLoading(false)
+      setLoading(false);
     };
 
     fetchUser();
@@ -30,16 +36,15 @@ const Footer = () => {
         {user ? (
           <div className="flex items-center justify-between gap-4 w-[100%]">
             <Link href="/" title="Home">
-              <House/>
+              <House />
             </Link>
 
             <Link href="/user/orders" title="Orders">
               <Package xlinkTitle="Orders" />
             </Link>
 
-            <Link href="/user/cart" title="
-            Cart">
-              <ShoppingCart/>
+            <Link href="/user/cart" title="Cart">
+              <ShoppingCart />
             </Link>
 
             <Link href="/user/profile" title="Profile">
@@ -49,17 +54,17 @@ const Footer = () => {
             </Link>
             {user?.role === "admin" && (
               <Link href="/admin" title="Admin">
-                <Shield/>
+                <Shield />
               </Link>
             )}
           </div>
-        ) : 
-          !loading ? (
-            <Link href="/signUp" className="rounded-2xl bg-black text-white p-3 text-sm w-[100%] lg:w-auto">
-              SignUp
-            </Link>
-          ):<p>Loading...</p>
-        }
+        ) : !loading ? (
+          <Link href="/signUp" className="rounded-2xl bg-black text-white p-3 text-sm w-[100%] lg:w-auto">
+            SignUp
+          </Link>
+        ) : (
+          <p>Loading...</p>
+        )}
       </div>
     </footer>
   );

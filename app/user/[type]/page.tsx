@@ -3,7 +3,7 @@ import Cart from '@/components/Cart';
 import Profile from '@/components/Profile';
 import Orders from '@/components/Orders';
 
-const page = async ({params}) => {
+const page = async ({params}:{params: Promise<{ type: string }>}) => {
   const type = ((await params)?.type as string) || ""
 
   let content;

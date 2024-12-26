@@ -1,12 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import { Input } from './ui/input';
-import { Button } from './ui/button'
+import { Button } from './ui/button';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -17,15 +17,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
+} from "@/components/ui/form";
 import { addProduct } from '@/lib/actions/product.action';
 
-interface props {
-  Open: boolean,
-  onClose: () => void,
-  productId: string,
-  field: string,
-  onAddProduct: (product) => void,
+interface AddProductProps {
+  Open: boolean;
+  onClose: () => void;
+  productId: string;
+  field: string;
+  onAddProduct: (product: { productName: string; price: number; productDetails: string; category: string; image: File }) => void;
 }
 
 const productSchema = z.object({
@@ -34,12 +34,12 @@ const productSchema = z.object({
   image: z
     .any()
     .refine((file) => file instanceof File && file.size > 0, { message: "Image is required" }),
-  description: z.string() || "",
-  category: z.string() || "",
-})
+  description: z.string().optional(),
+  category: z.string().optional(),
+});
 
-const AddProduct = ({ Open, onClose,  field, onAddProduct }: props) => {
-  const [loading, setLoading] = useState(false)
+const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, onAddProduct }) => {
+  const [loading, setLoading] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
@@ -50,27 +50,29 @@ const AddProduct = ({ Open, onClose,  field, onAddProduct }: props) => {
       description: "",
       category: ""
     },
-  })
+  });
 
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
     setLoading(true);
     try {
       const product = field === "Add" ? (
         await addProduct({
-          productName: values.productName || '',
-          price: Number(values.price) || 0,
+          productName: values.productName,
+          price: Number(values.price),
           productDetails: values.description || "",
           category: values.category || '',
-          image: values.image || undefined
+          image: values.image,
         })
-      ) : "";
+      ) : undefined;
       onAddProduct(product);
       onClose(); // Close the dialog
     } catch (error) {
-      console.log(error.message)
-      alert(error.message)
-    } finally { setLoading(false) }
-  }
+      console.log(error);
+      alert((error as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Dialog open={Open} onOpenChange={(isOpen) => !isOpen && onClose()}>
@@ -160,10 +162,9 @@ const AddProduct = ({ Open, onClose,  field, onAddProduct }: props) => {
             <Button className={`${loading && "cursor-not-allowed"}`} type="submit" disabled={loading}>{loading ? "Loading..." : field}</Button>
           </form>
         </Form>
-
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
-export default AddProduct
+export default AddProduct;

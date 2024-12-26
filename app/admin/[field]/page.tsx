@@ -5,7 +5,11 @@ import Admin_Accounts from '@/components/Admin_Accounts';
 import Admin_Orders from '@/components/Admin_Orders';
 import Admin from '@/components/Admin';
 
-const Page = async ({ params }: SearchParamsProps) => {
+interface PageProps {
+  params: Promise<{ field: string }>;
+}
+
+const Page = async ({ params }:PageProps) => {
   const field =  (await params)?.field as string || "admin"; 
 
   let content;

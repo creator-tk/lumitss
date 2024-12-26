@@ -18,7 +18,12 @@ import { handleError, sendEmailOTP, verifyOTP } from '@/lib/actions/user.action'
 import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
 
-const OTPModel = ({ email, accountId }: { email: string; accountId: string }) => {
+interface OTPModelProps {
+  email: string;
+  accountId: string;
+}
+
+const OTPModel: React.FC<OTPModelProps> = ({ email, accountId }) => {
   const [open, setOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState('');
@@ -34,7 +39,7 @@ const OTPModel = ({ email, accountId }: { email: string; accountId: string }) =>
 
       if (sessionId) router.push("/");
     } catch (error) {
-      handleError(error, "Failded to send OTP")
+      handleError(error, "Failed to verify OTP");
       console.log("Failed to verify OTP", error);
     } finally {
       setLoading(false);
@@ -44,7 +49,7 @@ const OTPModel = ({ email, accountId }: { email: string; accountId: string }) =>
 
   const handleResendOtp = async () => {
     setLoading(true);
-    await sendEmailOTP({email});
+    await sendEmailOTP({ email });
     setLoading(false);
   };
 
