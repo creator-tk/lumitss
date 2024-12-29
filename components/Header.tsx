@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, KeyboardEvent } from "react";
 import { Input } from "./ui/input";
 import { Package, Search, ShoppingCart } from "lucide-react";
 import Link from "next/link";
@@ -9,11 +9,10 @@ import { getCurrentUser } from "@/lib/actions/user.action";
 import { getServerCookie } from "@/lib/serverAction";
 import { useRouter } from "next/navigation";
 
-interface User {
+type User = {
   fullName: string;
-  role: string;
-  [key: string]: unknown;
-}
+  role: "user" | "admin";
+};
 
 const Header: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -24,12 +23,17 @@ const Header: React.FC = () => {
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
-      const session = await getServerCookie("appwrite-session");
-      if (session) {
-        const userStatus = await getCurrentUser();
-        setUser(userStatus);
+      try {
+        const session = await getServerCookie("appwrite-session");
+        if (session) {
+          const userStatus = await getCurrentUser();
+          setUser(userStatus as User);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchUser();
@@ -38,6 +42,13 @@ const Header: React.FC = () => {
   const handleSearch = () => {
     if (searchQuery.trim()) {
       router.push(`/search?query=${searchQuery}`);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSearch();
     }
   };
 
@@ -60,12 +71,7 @@ const Header: React.FC = () => {
           className="search_input lg:w-auto w-[100%]"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault(); 
-              handleSearch();
-            }
-          }}
+          onKeyDown={handleKeyDown}
         />
         <Search
           className="w-[5vw] cursor-pointer hidden lg:block"
@@ -89,7 +95,7 @@ const Header: React.FC = () => {
               </div>
             </Link>
             <Link href="/user/profile">
-              <div className="lg:flex-center p-1 rounded-xl cursor-pointer gap-1 ">
+              <div className="lg:flex-center p-1 rounded-xl cursor-pointer gap-1">
                 <div className="w-10 h-10 bordered !rounded-full flex-center cursor-pointer">
                   {user?.fullName ? user.fullName[0].toUpperCase() : ""}
                 </div>
@@ -100,7 +106,7 @@ const Header: React.FC = () => {
         ) : !loading ? (
           <Link
             href="/signUp"
-            className="rounded-xl bg-black text-white p-3 text-sm  self-end px-4"
+            className="rounded-xl bg-black text-white p-3 text-sm self-end px-4"
           >
             SignUp
           </Link>
@@ -108,12 +114,10 @@ const Header: React.FC = () => {
           <p>Loading...</p>
         )}
 
-        {user?.role === "admin" ? (
+        {user?.role === "admin" && (
           <Link href="/admin">
             <p>Admin</p>
           </Link>
-        ) : (
-          ""
         )}
       </div>
     </header>

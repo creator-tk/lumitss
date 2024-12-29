@@ -1,9 +1,32 @@
 declare interface Product {
-  $id: string;
-  image: string;
-  productName: string;
-  productDetails: string;
+  productName: string; 
+  $id?: string;
+  image: string ;
+  productDetails?: string;
   price: number;
+  category?: string;
+  productId?:string;
+}
+
+declare interface AddProductProps {
+  productName: string;
+  price: number;
+  productDetails?: string;
+  category?: string;
+  image: File | string;
+}
+
+declare interface Order {
+  productId: string;
+  orderDate: string;
+  orderStatus: string;
+  quantity: number;
+}
+
+declare interface PlaceOrderProps {
+  location?: string | object;
+  products: string[];
+  quantity?: object;
 }
 
 declare interface User {
@@ -11,24 +34,39 @@ declare interface User {
   email: string;
   accountId: string;
 }
-declare interface ActionResult {
-  success: boolean;
-  message: string;
-}
-declare interface Session {
-  secret: string;
-  $id: string;
-}
-declare interface UserResponse {
-  $id: string;
-  email: string;
-  fullName: string;
-  accountId: string;
+
+// declare interface ActionResult {
+//   success: boolean;
+//   message: string;
+// }
+// declare interface Session {
+//   secret: string;
+//   $id: string;
+// }
+// declare interface UserResponse {
+//   $id: string;
+//   email: string;
+//   fullName: string;
+//   accountId: string;
+// }
+
+// declare interface OTPResponse {
+//   accountId: string;
+// }
+// declare interface ServerError {
+//   message: string;
+// }
+
+
+declare interface SearchParamProps {
+  params?: Promise<SegmentParams>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-declare interface OTPResponse {
-  accountId: string;
+declare interface AdminPageProps{
+  params?: Promise<{field: string}>;
 }
-declare interface ServerError {
-  message: string;
+
+declare interface UserPageProps{
+  params?: Promise<{type:string}>;
 }

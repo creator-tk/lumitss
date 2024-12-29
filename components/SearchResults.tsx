@@ -10,13 +10,13 @@ const SearchResults = async ({query}) => {
   const resultedProducts = searchResults.length > 0 || relatedProducts.length > 0;
 
   return (
-    <div className='px-20 py-2'>
-      <h1 className='md:text-[1.5vw] text-[2vw]'>Search Results :</h1>
-      <div className='flex'>
+    <div className='md:px-20 py-2 px-10'>
+      <h1 className=' text-[3.5vh] md:text-2xl'>Search Results :</h1>
+      <div>
         {resultedProducts ? (
           searchResults.length > 0 ? searchResults : relatedProducts).map(eachProduct => (
-            <div key={eachProduct.$id} className='flex gap-8 shadow-gray-400 shadow-lg rounded-lg p-4 items-center flex-shrink-0'>
-              <div>
+            <div key={eachProduct.$id} className='flex gap-8 shadow-gray-400 shadow-lg rounded-lg p-4 flex-shrink-0 flex-col sm:flex-row'>
+              <div className='sm:w-1/2 w-[100%]'>
                 <Link href={`/viewProduct?product=${eachProduct.$id}`}>
                   <Image
                     src={eachProduct.image}
@@ -24,20 +24,20 @@ const SearchResults = async ({query}) => {
                     width={200}
                     height={200}
                     unoptimized={true}
-                    className='rounded-full'
+                    className='w-[100%] rounded-xl'
                   />
                 </Link>
               </div>
 
               <div className='flex flex-col gap-1'>
-                <p className='font-bold'>{eachProduct.productName}</p>
-                <p>{eachProduct.productDetails}</p>
-                <p> Offer price:{eachProduct.price}</p>
+                <p className='font-bold sm:text-[3vw] text-2xl'>{eachProduct.productName}</p>
+                <p className='text-[2vw]md:text-sm'>{eachProduct.productDetails}</p>
+                <p> Offer price:{eachProduct.price}/-</p>
                 <p> Regular price:<span className='line-through'>
-                  {eachProduct.price * 1.5}
+                  {eachProduct.price * 1.5}/-
                   </span></p>
                 
-                <ActionButton action="cart"/>
+                <ActionButton style='w-fit' action="cart"/>
               </div>
             </div>
           ))

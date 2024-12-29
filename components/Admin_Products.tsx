@@ -7,100 +7,104 @@ import Image from 'next/image';
 import AddProduct from './AddProduct';
 import { Button } from './ui/button';
 import { fetchUserDetails } from '@/lib/serverAction';
-
-// Define the Product interface
-interface Product {
-  $id: string;
-  image: string;
-  productName: string;
-  price: number;
-  productDetails: string;
-  category: string;
-}
+import Loading from './Loader';
 
 const Admin_Products: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [products, setProducts] = useState<Product[]>([]);
-  const [addField, setAddField] = useState<boolean>(false);
-  const [fieldName, setFieldName] = useState<string>('Add');
-  const [productId, setProductId] = useState<string>('');
-
-  const productState = (prop: string) => {
-    setAddField(true);
-    setFieldName(prop);
-  };
+  const [showAddProduct, setShowAddProduct] = useState<boolean>(false);
+  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+  const [productCount, setProductCount] = useState(0)
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      await fetchUserDetails();
-      const result = await getAllProducts();
-      setProducts(result);
-      setLoading(false);
+      try {
+        await fetchUserDetails();
+        const result = await getAllProducts();
+        setProducts(result);
+        setProductCount(result.length)
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
-  }, [fieldName]);
+  }, []);
+  
 
-  const addProductToList = (newProduct: Product) => {
-    setProducts((prevProducts) => [...prevProducts, newProduct]);
-    setAddField(false); 
+  const handleAddProductClick = (): void => {
+    setCurrentProduct(null);
+    setShowAddProduct(true);
+  };
+
+  const handleUpdateProductClick = (product: Product): void => {
+    setCurrentProduct(product);
+    setShowAddProduct(true);
   };
 
   return (
     <div>
-      <div className='flex justify-end'>
-        <Button onClick={() => productState("Add")} className='flex items-center gap-2 rounded-full p-4 shadow-2xl'>
-          Add Products
-          <CirclePlus />
+      <p className='text-[2vw]'>total Products: {productCount}</p>
+      <div className="flex justify-end">
+        <Button
+          onClick={handleAddProductClick}
+          className="flex items-center gap-2 rounded-full md:!p-4 shadow-2xl text-[1vw] !p-0 !m-0 bg-transparent md:bg-black"
+        >
+          <p className='hidden md:block'>Add product</p>
+          <CirclePlus className='text-black md:text-white '  />
         </Button>
       </div>
 
-      <div className='mt-4'>
-        <ul className='grid grid-cols-11 gap-2 bordered items-center p-2'>
-          <li className='col-span-2'>Image</li>
-          <li className='col-span-2'>Name</li>
-          <li className='col-span-1'>Price</li>
-          <li className='col-span-3'>Description</li>
-          <li className='col-span-2'>Category</li>
-          <li className='col-span-1'>
-            Update
-          </li>
+      <div className="mt-4">
+        <ul className="grid grid-cols-11 gap-2 bordered items-center p-2">
+          <li className="col-span-2 text-[1.2vw]">Image</li>
+          <li className="col-span-2 text-[1.2vw]">Name</li>
+          <li className="col-span-1 text-[1.2vw]">Price</li>
+          <li className="col-span-3 text-[1.2vw]">Description</li>
+          <li className="col-span-2 text-[1.2vw]">Category</li>
+          <li className="col-span-1 text-[1.2vw]">Update</li>
         </ul>
 
-        {loading && <p>Loading...</p>}
+        {loading && <Loading/>}
         {!loading && products.length === 0 && (
-          <p className='text-center text-gray-300'>No products found!</p>
+          <p className="text-center text-gray-300">No products found!</p>
         )}
-        {!loading && products.length > 0 && (
+        {!loading &&
           products.map((product) => (
-            <ul key={product.$id} className='grid grid-cols-11 gap-2 items-center p-2'>
-              <li className='col-span-2 truncate'>
+            <ul
+              key={product.$id}
+              className="grid grid-cols-11 gap-2 items-center p-2"
+            >
+              <li className="col-span-2 text-[1vw] truncate">
                 <Image
                   src={product.image}
                   alt="product"
                   width={100}
                   height={100}
-                  unoptimized={true}
+                  unoptimized
                 />
               </li>
-              <li className='col-span-2'>{product.productName}</li>
-              <li className='col-span-1'>{product.price}</li>
-              <li className='col-span-3'>{product.productDetails}</li>
-              <li className='col-span-2'>{product.category}</li>
-              <li className='col-span-1'>
-                <Button onClick={() => {
-                  productState("Update"); setProductId(product.$id);
-                }}>
-                  <CircleArrowUpIcon />
-                </Button>
+              <li className="col-span-2 text-[1vw]">{product.productName}</li>
+              <li className="col-span-1 text-[1vw]">{product.price}</li>
+              <li className="col-span-3 text-[1vw]">{product.productDetails}</li>
+              <li className="col-span-2 text-[1vw]">{product.category}</li>
+              <li className="col-span-1 text-[1vw]">
+              <CircleArrowUpIcon onClick={() => handleUpdateProductClick(product)} className='!w-[2.5vw]'/>
               </li>
             </ul>
-          ))
-        )}
+          ))}
       </div>
 
-      <AddProduct Open={addField} onClose={() => setAddField(!addField)} field={fieldName} productId={productId} onAddProduct={addProductToList} />
+      <AddProduct
+        Open={showAddProduct}
+        onClose={() => setShowAddProduct(false)}
+        field={currentProduct ? 'Update' : 'Add'}
+        productId={currentProduct?.$id || ''}
+        setCount={setProductCount}
+      />
     </div>
   );
 };

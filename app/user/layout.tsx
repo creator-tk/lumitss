@@ -17,7 +17,10 @@ const layout = async ({children}:{children: React.ReactNode}) => {
   return (
     <div className='w-screen h-screen lg:px-24 lg:py-10 px-4 py-2'>
     <section className='mb-4 sticky top-0 flex lg:justify-between justify-center'>
-      <Image src='/logo.png' width={150} height={100} alt="Logo" className='w-[100px]'/>
+      <Link href="/">
+        <Image src='/logo.png' width={150} height={100} alt="Logo" className='w-[100px]'/>
+      </Link>
+
       <Link href='/'>
         <p className='text-center p-2 rounded-full cursor-pointer hidden lg:block'>Continue Shopping</p>
       </Link>

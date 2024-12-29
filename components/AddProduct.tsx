@@ -19,13 +19,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { addProduct } from '@/lib/actions/product.action';
+import { useToast } from '@/hooks/use-toast';
 
 interface AddProductProps {
   Open: boolean;
   onClose: () => void;
   productId: string;
   field: string;
-  onAddProduct: (product: { productName: string; price: number; productDetails: string; category: string; image: File }) => void;
+  setCount: (value:number) => void;
 }
 
 const productSchema = z.object({
@@ -34,12 +35,15 @@ const productSchema = z.object({
   image: z
     .any()
     .refine((file) => file instanceof File && file.size > 0, { message: "Image is required" }),
-  description: z.string().optional(),
-  category: z.string().optional(),
+  productDetails: z.string().optional(),
+  category: z.string().optional(), 
 });
 
-const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, onAddProduct }) => {
+
+const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, setCount }) => {
   const [loading, setLoading] = useState<boolean>(false);
+
+  const {toast} = useToast();
 
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
@@ -47,27 +51,42 @@ const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, onAddProd
       productName: "",
       price: 0,
       image: undefined,
-      description: "",
+      productDetails:"",
       category: ""
     },
   });
 
   const onSubmit = async (values: z.infer<typeof productSchema>) => {
+    console.log("Uploaded Image", values.image)
+    if (!(values.image instanceof File)) {
+      console.error("Image is not a valid File.");
+      throw new Error("Image is not a file")
+    }
     setLoading(true);
     try {
-      const product = field === "Add" ? (
-        await addProduct({
-          productName: values.productName,
-          price: Number(values.price),
-          productDetails: values.description || "",
-          category: values.category || '',
-          image: values.image,
-        })
-      ) : undefined;
-      onAddProduct(product);
-      onClose(); // Close the dialog
+      const product = await addProduct({
+        productName: values.productName,
+        price: values.price,
+        image: values.image,
+        productDetails: values?.productDetails,
+        category: values?.category,
+      });
+
+      if (product) {
+        setCount((prev) => prev = prev+1); 
+        toast({
+          title: "Product Added Successfully"
+        });
+      } else{
+        onClose();
+        throw new Error("Something went wrong Plz after some time")
+      }
+      onClose();
     } catch (error) {
       console.log(error);
+      toast({
+        title: "Some unexpeted happend try after some time."
+      })
       alert((error as Error).message);
     } finally {
       setLoading(false);
@@ -119,7 +138,7 @@ const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, onAddProd
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <FormControl>
-                      <Input placeholder="category" {...field} />
+                      <Input placeholder="category" {...field} required /> 
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -129,7 +148,7 @@ const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, onAddProd
 
             <FormField
               control={form.control}
-              name="description"
+              name="productDetails"
               render={({ field }) => (
                 <FormItem className='flex flex-col gap-1'>
                   <FormLabel>Description</FormLabel>
@@ -159,7 +178,7 @@ const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, onAddProd
               )}
             />
 
-            <Button className={`${loading && "cursor-not-allowed"}`} type="submit" disabled={loading}>{loading ? "Loading..." : field}</Button>
+            <Button className={`${loading && "cursor-not-allowed"} text-[1vw]`} type="submit" disabled={loading}>{loading ? "Loading..." : field}</Button>
           </form>
         </Form>
       </DialogContent>

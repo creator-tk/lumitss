@@ -1,71 +1,86 @@
-"use client";
+"use client"
 
-import React from 'react';
-import { Button } from './ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { addProductToCart, removeProductFromCart } from '@/lib/actions/product.action';
-import { getCurrentUser, signOutUser } from '@/lib/actions/user.action';
-import { redirect } from 'next/navigation';
-
+import React from "react";
+import { Button } from "./ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { addProductToCart, removeProductFromCart } from "@/lib/actions/product.action";
+import { getCurrentUser, signOutUser } from "@/lib/actions/user.action";
+import { redirect } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 interface ActionButtonProps {
-  id: string;
-  action: 'cart' | 'remove' | 'logout'; 
-  style: string;
+  id?: string;
+  action?: "cart" | "remove" | "logout" | "update";
+  style?: string;
 }
 
 export const ActionButton: React.FC<ActionButtonProps> = ({ id, action, style }) => {
   const { toast } = useToast();
   const [loading, setLoading] = React.useState<boolean>(false);
 
-  const performAction = async (action: 'cart' | 'remove' | 'logout') => {
+  const performAction = async (action: "cart" | "remove" | "logout" | "update") => {
     try {
       setLoading(true);
-      
+
       const currentUser = await getCurrentUser();
 
       if (!currentUser) {
-        redirect('/signIn');
-        return; 
+        redirect("/signIn");
+        return;
       }
 
-      let success = false;
-      if (action === 'cart') {
-        success = await addProductToCart(id); 
-      } else if (action === 'remove') {
+      let success: string | undefined;
+      if (action === "cart") {
+        success = await addProductToCart(id);
+      } else if (action === "remove") {
         success = await removeProductFromCart(id);
-        window.location.reload();
-      } else if (action === 'logout') {
+        if (success) {
+          window.location.reload();
+        }
+      } else if (action === "logout") {
         success = await signOutUser();
+      } else if( action === "update"){
+        return toast({title:"Update Functionality is not implemented yet"})
       }
 
       if (success) {
         toast({
-          title: `Product ${action}ed successfully`,
-          variant: "success",
+          title: `Action completed successfully`,
+          description: `Product ${action === "cart" ? "added to cart" : action === "remove" ? "removed from cart" : "logout completed"} successfully`,
           duration: 3000,
         });
+      } else {
+        throw new Error("Action failed");
       }
-    } catch (error) {
-      console.error(error); 
+    } catch (error: unknown) {
+      console.error(error);
       toast({
-        title: "Failed to add product to cart",
-        variant: "error",
+        title: "Action failed",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
         duration: 5000,
-      }); 
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Button 
-      className={`w-[100%] sm:w-1/3 lg:w-1/4 ${style}`} 
-      onClick={() => performAction(action)} 
-      disabled={loading}>
+    <Button
+      className={`w-full ${style}`}
+      onClick={() => performAction(action)}
+      disabled={loading}
+    >
       {loading
-        ? action === 'cart' ? 'Adding to Cart..' : 'Loading...'
-        : action === 'cart' ? 'Add to Cart' : (action[0].toUpperCase() + action.slice(1))}
+        ? action === "cart"
+          ? (<><Loader2 className="animate-spin"/> Adding to Cart...</>)
+          : action === "remove"
+          ? (<><Loader2 className="animate-spin"/> Removing from Cart...</>)
+          : "Logging out..."
+        : action === "cart"
+        ? "Add to Cart"
+        : action === "remove"
+        ? "Remove from Cart"
+        : "Logout"}
     </Button>
   );
 };

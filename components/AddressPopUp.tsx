@@ -20,25 +20,15 @@ import { useToast } from "@/hooks/use-toast";
 import { placeOrder } from "@/lib/actions/product.action";
 import { useRouter } from "next/navigation";
 
-// Define the address type
-interface Address {
-  country: string;
-  phone: string;
-  area: string;
-  pincode: string;
-  street: string;
-  landmark: string;
-}
-
 interface AddressPopUpProps {
   isOpen: boolean;
   onClose: () => void;
   productId: string;
+  quantity: object;
 }
 
-const AddressPopUp: React.FC<AddressPopUpProps> = ({ isOpen, onClose, productId }) => {
-
-  const [address, setAddress] = useState<Address>({
+const AddressPopUp = ({ isOpen, onClose, productId, quantity }: AddressPopUpProps) => {
+  const [address, setAddress] = useState({
     country: "",
     phone: "",
     area: "",
@@ -46,12 +36,14 @@ const AddressPopUp: React.FC<AddressPopUpProps> = ({ isOpen, onClose, productId 
     street: "",
     landmark: "",
   });
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
-  const route = useRouter();
-  const {toast} = useToast();
+  const router = useRouter();
+  const { toast } = useToast();
 
-  const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const onChangeHandler = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setAddress((prev) => ({
       ...prev,
@@ -71,20 +63,24 @@ const AddressPopUp: React.FC<AddressPopUpProps> = ({ isOpen, onClose, productId 
     setLoading(true);
 
     const addressString = JSON.stringify(address);
-    console.log("stringaddress from popup", addressString);
     try {
-      const result = await placeOrder({ location: addressString, products: [productId] });
+      const result = await placeOrder({
+        location: addressString,
+        products: [productId],
+        quantity: { [productId]: quantity[productId] || 1 }
+      });
       console.log(result);
       if (!result.success) {
         toast({
-          title: "Failed to process"
+          title: "Failed to process",
         });
-      } else {
-        toast({
-          title: result.message,
-          description: "Your order got confirmed"
-        });
+        return;
       }
+
+      toast({
+        title: result.message,
+        description: "Your order got confirmed",
+      });
 
       setAddress({
         country: "",
@@ -95,13 +91,12 @@ const AddressPopUp: React.FC<AddressPopUpProps> = ({ isOpen, onClose, productId 
         landmark: "",
       });
       onClose();
-      route.push("/user/orders");
-
+      router.push("/user/orders");
     } catch (error) {
-      console.log((error as Error).message);
+      console.log(error.message);
       toast({
-        title: 'Failed to place order',
-        description: "Process Failed"
+        title: "Failed to place order",
+        description: "Process failed",
       });
     } finally {
       setLoading(false);
@@ -112,18 +107,16 @@ const AddressPopUp: React.FC<AddressPopUpProps> = ({ isOpen, onClose, productId 
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogTitle>Enter Address</DialogTitle>
-        <form className="flex flex-col gap-2"
-          onSubmit={handlePlaceOrder}
-        >
+        <form className="flex flex-col gap-4" onSubmit={handlePlaceOrder}>
           <div>
-            <label htmlFor="country">Country</label>
+            <label htmlFor="country" className="block text-sm font-medium">Country</label>
             <Select
               value={address.country}
               onValueChange={(value) => onSelectChangeHandler("country", value)}
               required
             >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Country" />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select your country" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="INDIA">India</SelectItem>
@@ -132,12 +125,11 @@ const AddressPopUp: React.FC<AddressPopUpProps> = ({ isOpen, onClose, productId 
           </div>
 
           <div>
-            <label htmlFor="phone">Phone Number:</label>
+            <label htmlFor="phone" className="block text-sm font-medium">Phone Number</label>
             <Input
               type="number"
               placeholder="Phone"
               required
-              className="bordered"
               id="phone"
               name="phone"
               value={address.phone}
@@ -145,14 +137,13 @@ const AddressPopUp: React.FC<AddressPopUpProps> = ({ isOpen, onClose, productId 
             />
           </div>
 
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="area">Area</label>
+              <label htmlFor="area" className="block text-sm font-medium">Area</label>
               <Input
                 type="text"
                 placeholder="Location"
                 id="area"
-                className="bordered"
                 required
                 name="area"
                 value={address.area}
@@ -160,12 +151,11 @@ const AddressPopUp: React.FC<AddressPopUpProps> = ({ isOpen, onClose, productId 
               />
             </div>
             <div>
-              <label htmlFor="pincode">PinCode</label>
+              <label htmlFor="pincode" className="block text-sm font-medium">PinCode</label>
               <Input
                 type="number"
                 placeholder="PinCode"
                 id="pincode"
-                className="bordered"
                 required
                 name="pincode"
                 value={address.pincode}
@@ -175,7 +165,7 @@ const AddressPopUp: React.FC<AddressPopUpProps> = ({ isOpen, onClose, productId 
           </div>
 
           <div>
-            <label htmlFor="street">Street</label>
+            <label htmlFor="street" className="block text-sm font-medium">Street</label>
             <Input
               type="text"
               placeholder="Street"
@@ -187,7 +177,7 @@ const AddressPopUp: React.FC<AddressPopUpProps> = ({ isOpen, onClose, productId 
           </div>
 
           <div>
-            <label htmlFor="landmark">LandMark</label>
+            <label htmlFor="landmark" className="block text-sm font-medium">LandMark</label>
             <Textarea
               placeholder="Landmark"
               id="landmark"
@@ -199,10 +189,10 @@ const AddressPopUp: React.FC<AddressPopUpProps> = ({ isOpen, onClose, productId 
 
           <Button
             type="submit"
-            className="btn-class"
+            className={`mt-4 ${loading && "cursor-not-allowed"}`}
             disabled={loading}
           >
-            {loading ? "Placing your order" : "Place Order"}
+            {loading ? "Placing your order..." : "Place Order"}
           </Button>
         </form>
       </DialogContent>

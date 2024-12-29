@@ -2,6 +2,7 @@ import Image from 'next/image';
 import React from 'react';
 import Link from 'next/link';
 import { fetchUserDetails } from '@/lib/serverAction';
+import { Toaster } from '@/components/ui/toaster';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -12,7 +13,7 @@ const Layout: React.FC<LayoutProps> = async ({ children }) => {
 
   return (
     <div>
-      <header className='flex justify-between shadow-xl p-4 px-24 items-center'>
+      <header className='flex sm:justify-between shadow-xl p-4 px-24 items-center justify-center'>
         <Link href="/">
           <Image
             src="/logo (2).png"
@@ -22,7 +23,7 @@ const Layout: React.FC<LayoutProps> = async ({ children }) => {
           />
         </Link>
 
-        <div className='flex gap-4 cursor-pointer'>
+        <div className=' gap-4 cursor-pointer fixed bottom-0 flex sm:relative sm:bg-transparent sm:w-auto bg-gray-100 p-4 justify-between w-[100%]'>
           <Link href="/admin/users">
             <p className="font-bold">Users</p>
           </Link>
@@ -41,6 +42,7 @@ const Layout: React.FC<LayoutProps> = async ({ children }) => {
         </div>
       </header>
       {children}
+      <Toaster/>
     </div>
   );
 }

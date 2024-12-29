@@ -1,6 +1,4 @@
-// user.actions.ts
-
-'use server'
+"use server"
 
 import { createSessionClient, serverAction } from "../appwrite";
 import { appWriteConfig } from "../appwrite/config";
@@ -8,16 +6,13 @@ import { parseStringify } from "../utils";
 import { Query, ID } from "node-appwrite";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-// import { User, ActionResult, OTPResponse, UserResponse, Session, ServerError } from "@/types"; 
 
-
-export const handleError = async (error: unknown, message: string): Promise<void> => {
-  console.error(error, message);
+export const handleError = async (error: unknown, message: string) => {
+  console.log(error, message);
   throw error;
 };
 
-// Get a user by their email
-const getUserByEmail = async (email: string): Promise<UserResponse | null | string> => {
+const getUserByEmail = async (email: string) => {
   try {
     const { databases } = await serverAction();
 
@@ -37,21 +32,20 @@ const getUserByEmail = async (email: string): Promise<UserResponse | null | stri
   }
 };
 
-// Send email OTP for account verification
-export const sendEmailOTP = async ({ email }: { email: string }): Promise<string | undefined> => {
+export const sendEmailOTP = async ({ email }: { email: string }) => {
   const { account } = await serverAction();
 
   try {
     const session = await account.createEmailToken(ID.unique(), email);
+
     return session.userId;
   } catch (error) {
     handleError(error, "Failed to send Email OTP");
-    return undefined;
   }
 };
 
-// Create a new account
-export const createAccount = async ({ fullName, email }: { fullName: string; email: string }): Promise<string> => {
+export const createAccount = async ({ fullName, email }: { fullName: string; email: string }) => {
+
   if (!fullName || typeof fullName !== "string") {
     throw new Error("Invalid User name");
   }
@@ -85,14 +79,13 @@ export const createAccount = async ({ fullName, email }: { fullName: string; ema
   return parseStringify({ accountId });
 };
 
-// Verify OTP and create session
-export const verifyOTP = async ({ accountId, password }: { accountId: string; password: string }): Promise<string> => {
+export const verifyOTP = async ({ accountId, password }: { accountId: string; password: string }) => {
   try {
     const { account } = await serverAction();
 
     const session = await account.createSession(accountId.toString(), password.toString());
 
-    const expires = new Date();
+    const expires = new Date(); 
     expires.setFullYear(expires.getFullYear() + 1);
     (await cookies()).set("appwrite-session", session.secret, {
       path: "/",
@@ -105,12 +98,10 @@ export const verifyOTP = async ({ accountId, password }: { accountId: string; pa
     return parseStringify({ sessionId: session.$id });
   } catch (error) {
     handleError(error, "Failed to Verify OTP");
-    throw error; // Ensure error is thrown in case of failure
   }
 };
 
-// Get the current logged-in user
-export const getCurrentUser = async (): Promise<UserResponse | null> => {
+export const getCurrentUser = async () => {
   try {
     const { databases, account } = await createSessionClient();
 
@@ -135,12 +126,11 @@ export const getCurrentUser = async (): Promise<UserResponse | null> => {
   }
 };
 
-// Sign in user
-export const signInUser = async ({ email }: { email: string }): Promise<OTPResponse | null> => {
+export const signInUser = async ({ email }: { email: string }) => {
   try {
     const existingUser = await getUserByEmail(email);
 
-    if (existingUser) {
+    if (typeof existingUser !== 'string' && existingUser?.accountId) {
       const accountId = existingUser.accountId;
 
       await sendEmailOTP({ email });
@@ -154,31 +144,30 @@ export const signInUser = async ({ email }: { email: string }): Promise<OTPRespo
   }
 };
 
-// Get all users from the database
-export const getAllUsers = async (): Promise<UserResponse[] | void> => {
+
+export const getAllUsers = async () => {
   try {
     const { databases } = await serverAction();
 
     const result = await databases.listDocuments(
       appWriteConfig.databaseId,
-      appWriteConfig.usersCollectionsId,
+      appWriteConfig.usersCollectionsId
     );
 
     return result.documents;
   } catch (error) {
-    console.log("Error: " + error.message);
-    return undefined;
+    console.log("Error:" + error.message);
   }
 };
 
-// Sign out user by deleting the current session
-export const signOutUser = async (): Promise<void> => {
+export const signOutUser = async () => {
   const { account } = await createSessionClient();
 
   try {
     await account.deleteSession("current");
     (await cookies()).delete("appwrite-session");
-    redirect("/"); // Redirect to homepage after sign out
+    redirect("/");
+    return "LogedOut Successfully"
   } catch (error) {
     handleError(error, "Failed to sign out user");
   }

@@ -5,12 +5,9 @@ import Admin_Accounts from '@/components/Admin_Accounts';
 import Admin_Orders from '@/components/Admin_Orders';
 import Admin from '@/components/Admin';
 
-interface PageProps {
-  params: Promise<{ field: string }>;
-}
 
-const Page = async ({ params }:PageProps) => {
-  const field =  (await params)?.field as string || "admin"; 
+const Page = async ({ params }:AdminPageProps) => {
+  const field =  ((await params)?.field as string) || "admin"; 
 
   let content;
 
@@ -32,7 +29,7 @@ const Page = async ({ params }:PageProps) => {
   }
 
   return (
-    <div className='px-24 py-4'>
+    <div className='md:px-24 py-4 px-2'>
       <h1 className='font-sans text-2xl'>{field.toUpperCase()}</h1>
 
       <div className='px-4'>

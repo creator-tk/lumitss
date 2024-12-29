@@ -6,11 +6,10 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/actions/user.action";
 import { getServerCookie } from "@/lib/serverAction";
 
-interface User {
+type User = {
   fullName: string;
-  role: string;
-  [key: string]: unknown;
-}
+  role: "user" | "admin";
+};
 
 const Footer: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -19,19 +18,24 @@ const Footer: React.FC = () => {
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
-      const session = await getServerCookie("appwrite-session");
-      if (session) {
-        const userStatus = await getCurrentUser();
-        setUser(userStatus);
+      try {
+        const session = await getServerCookie("appwrite-session");
+        if (session) {
+          const userStatus = await getCurrentUser();
+          setUser(userStatus as User); // Ensure the returned value matches the User type
+        }
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchUser();
   }, []);
 
   return (
-    <footer className="fixed bottom-0 w-full bg-gray-100 p-4 lg:hidden">
+    <footer className="fixed bottom-0 w-full bg-gray-100 p-4 lg:hidden bg-opacity-80 bg-blur mt-8">
       <div className="flex justify-between w-[100%]">
         {user ? (
           <div className="flex items-center justify-between gap-4 w-[100%]">
@@ -52,6 +56,7 @@ const Footer: React.FC = () => {
                 {user?.fullName ? user.fullName[0].toUpperCase() : ""}
               </div>
             </Link>
+
             {user?.role === "admin" && (
               <Link href="/admin" title="Admin">
                 <Shield />
@@ -59,7 +64,10 @@ const Footer: React.FC = () => {
             )}
           </div>
         ) : !loading ? (
-          <Link href="/signUp" className="rounded-2xl bg-black text-white p-3 text-sm w-[100%] lg:w-auto">
+          <Link
+            href="/signUp"
+            className="rounded-2xl bg-black text-white p-3 text-sm w-[100%] lg:w-auto"
+          >
             SignUp
           </Link>
         ) : (

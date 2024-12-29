@@ -1,8 +1,8 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { z } from "zod";
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,35 +13,32 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import Link from 'next/link';
-import { createAccount, signInUser } from '@/lib/actions/user.action';
-import OTPModel from './OTPModel';
+import Link from "next/link";
+import { createAccount, signInUser } from "@/lib/actions/user.action";
+import OTPModel from "./OTPModel";
 
 type FormType = "signIn" | "signUp";
 
-// Define schema generator based on form type
-const authFormSchema = (formType: FormType) => {
-  return z.object({
+const authFormSchema = (formType: FormType) =>
+  z.object({
     email: z.string().email(),
     fullName: formType === "signUp" ? z.string().min(4).max(50) : z.string().optional(),
   });
-};
-
-// Define form values type based on Zod schema
-type FormValues = z.infer<ReturnType<typeof authFormSchema>>;
 
 interface AuthFormProps {
   type: FormType;
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
-  const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [accountId, setAccountId] = useState('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [accountId, setAccountId] = useState<string>("");
 
   const formSchema = authFormSchema(type);
 
-  const form = useForm<FormValues>({
+  type FormData = z.infer<typeof formSchema>;
+
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       fullName: "",
@@ -49,19 +46,19 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
     },
   });
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit: SubmitHandler<FormData> = async (values) => {
     setLoading(true);
-    setErrorMessage('');
+    setErrorMessage("");
     try {
       const user =
-        type === 'signUp'
-          ? await createAccount({ fullName: values.fullName || '', email: values.email })
+        type === "signUp"
+          ? await createAccount({ fullName: values.fullName || "", email: values.email })
           : await signInUser({ email: values.email });
 
       setAccountId(user.accountId);
     } catch (error) {
-      console.log((error as Error).message);
-      setErrorMessage(`Failed to create Account. ${(error as Error).message}`);
+      console.error(error.message);
+      setErrorMessage(`Failed to ${type === "signUp" ? "create account" : "sign in"}. ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -124,7 +121,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ type }) => {
         </form>
       </Form>
 
-      {accountId && <OTPModel email={form.getValues('email')} accountId={accountId} />}
+      {accountId && <OTPModel email={form.getValues("email")} accountId={accountId} />}
     </>
   );
 };

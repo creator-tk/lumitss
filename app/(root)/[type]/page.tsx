@@ -2,32 +2,25 @@ import SearchResults from '@/components/SearchResults';
 import ViewProduct from '@/components/ViewProduct';
 import React from 'react';
 
-// Define the props interface
-interface PageProps {
-  params: Promise<{ type: string }>;
-  searchParams: Promise<Record<string, string | string[]>>;
-}
 
+const page = async ({ params, searchParams }: SearchParamProps) => {
+  const type = ((await params)?.type as string) || '';
 
-const Page = async ({ params, searchParams }: PageProps) => {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
+  const searchText = ((await searchParams)?.query as string) || '';
 
-  const type = resolvedParams?.type || '';
-  const searchText = (resolvedSearchParams.query as string) || '';
-  const searchProduct = (resolvedSearchParams.product as string) || '';
+  const productId = ((await searchParams)?.product as string) || '';
 
   let content;
 
   if (type === 'search') {
-    content = <SearchResults query={searchText}/>;
-  } else if (type === 'viewProduct') {
-    content = <ViewProduct productId={searchProduct} />;
+    content = <SearchResults query={searchText} />;
+  } else if (type === 'viewProduct' && productId) {
+    content = <ViewProduct productId={productId} />;
   } else {
-    content = <div>No content available</div>;
+    content = <p>Invalid type or missing parameters</p>;
   }
 
   return <div>{content}</div>;
 };
 
-export default Page;
+export default page;

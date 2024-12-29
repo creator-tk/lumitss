@@ -1,6 +1,7 @@
 import React from 'react'
 
-const Admin_Orders = () => {
+
+const Admin_Orders = async () => {
   return (
     <div>Admin_Orders</div>
   )

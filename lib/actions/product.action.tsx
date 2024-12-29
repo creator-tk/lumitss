@@ -1,77 +1,63 @@
 "use server"
 
 import { ID, Query } from "node-appwrite";
-import { serverAction } from "../appwrite"
+import { serverAction } from "../appwrite";
 import { appWriteConfig } from "../appwrite/config";
 import { constructImageUrl, parseStringify } from "../utils";
-import { handleError } from "./user.action"
-import {InputFile} from "node-appwrite/file"
+import { handleError } from "./user.action";
+import { InputFile } from "node-appwrite/file";
 import { getCurrentUser } from "./user.action";
 
 
+// Fetch all products
 export const getAllProducts = async () => {
   try {
-    const {databases}  = await serverAction();
+    const { databases } = await serverAction();
 
     const result = await databases.listDocuments(
       appWriteConfig.databaseId,
       appWriteConfig.filesCollectionsId
     );
     return parseStringify(result.documents);
-
   } catch (error) {
-    handleError(error.message, "Failded to fetch")
-    console.error('Failed to Fetch Products:', error.message);
+    handleError(error.message, "Unable to fetch products.");
+    console.error("Error fetching products:", error.message);
     throw error;
   }
 };
 
-
-//Add product in the database
-interface AddProductProps {
-  productName: string;
-  price: number;
-  productDetails: string;
-  category: string;
-  image: File; // Accepts a File object
-}
-
-//
+// Add product to the database
 export const addProduct = async ({
   productName,
   price,
   productDetails,
   category,
-  image
+  image,
 }: AddProductProps) => {
   const { storage, databases } = await serverAction();
   let uploadedImage;
-
   try {
-    // Convert the File to an InputFile object for Appwrite's storage
-    const inputFile = InputFile.fromBuffer(image, image.name);
+    if (image instanceof File) {
+      const inputFile = InputFile.fromBuffer(image as unknown as Buffer, image.name);
 
-    // Upload the image to Appwrite Storage
-    uploadedImage = await storage.createFile(
-      appWriteConfig.bucketId,
-      ID.unique(),
-      inputFile
-    );
+      uploadedImage = await storage.createFile(
+        appWriteConfig.bucketId,
+        ID.unique(),
+        inputFile
+      );
+    } else {
+      throw new Error("Image is not a valid File");
+    }
 
-    // Construct the image URL using the uploaded image's ID
-    const imageUrl = constructImageUrl(uploadedImage.$id);
-
- 
     const productDocument = {
       productName,
       price,
       productDetails,
       category,
-      image: imageUrl, // Image URL as a string
-      imageId: uploadedImage.$id, // Store the image ID for reference
+      image: constructImageUrl(uploadedImage.$id),
+      imageId: uploadedImage.$id,
     };
 
-    // Insert the new product into the database
     const result = await databases.createDocument(
       appWriteConfig.databaseId,
       appWriteConfig.filesCollectionsId,
@@ -79,37 +65,28 @@ export const addProduct = async ({
       productDocument
     );
 
-    return {
-      success: true,
-      data: result,
-      message: "Product Added Successfully"
-    };
-
-  } catch (error) {
-    if (uploadedImage) {
-      await storage.deleteFile(appWriteConfig.bucketId, uploadedImage.$id);
+    return result;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (uploadedImage) {
+        await storage.deleteFile(appWriteConfig.bucketId, uploadedImage.$id);
+      }
+      handleError(error.message, "Unable to add product.");
+      throw error;
     }
-
-    handleError(error, "Failed to add product");
-    return {
-      success: false,
-      message: "Failed to add product"
-    };
   }
 };
 
-//Added product in the databse
 
-
-export const addProductToCart = async (id: string): Promise<ActionResult> =>{
-
+// Add product to cart
+export const addProductToCart = async (id: string) => {
   const currentUser = await getCurrentUser();
 
-  if(!currentUser){
+  if (!currentUser) {
     return;
   }
 
-  const {databases} = await serverAction();
+  const { databases } = await serverAction();
 
   try {
     const userDocument = await databases.getDocument(
@@ -129,85 +106,52 @@ export const addProductToCart = async (id: string): Promise<ActionResult> =>{
       appWriteConfig.usersCollectionsId,
       currentUser.$id,
       {
-        cart: cartString
+        cart: cartString,
       }
     );
 
-    return {
-      success:true,
-      message:"Product Add to the cart Successfully"
-    };
-  } catch (error) {
-    console.log( error.message);
-    return{
-      success:false,
-      message:"Failded to add product to the cart"
+    return "Product successfully added to cart.";
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log("Error adding product to cart:", error.message);
+      throw error;
     }
   }
-}
+};
 
-
-// interface Product {
-//   $id: string;
-//   image: string;
-//   productName: string;
-//   price: string;
-// }
-
-interface ProductsResponse {
-  success: boolean;
-  data: Product[] | null;
-  message?: string;
-  searchResults?: Product[];
-  relatedProducts?: Product[];
-  orderedItems?: Product[];
-  orderDetails?: { orderDate: string; orderStatus: string; quantity: number }[];
-}
-
-export const getProducts = async (specific: string, searchQuery: string = ''): Promise<ProductsResponse> => {
+// Fetch products based on criteria
+export const getProducts = async (
+  specific?: string,
+  searchQuery?: string
+) => {
   const { databases } = await serverAction();
 
   try {
-    if (specific === 'all') {
+    if (specific === "all") {
       const result = await databases.listDocuments(
         appWriteConfig.databaseId,
         appWriteConfig.filesCollectionsId
       );
-      return {
-        success: true,
-        data: JSON.parse(JSON.stringify(result.documents)) || [],
-      };
-    } else if (specific === 'orders') {
+      return JSON.parse(JSON.stringify(result.documents));
+    } else if (specific === "orders") {
       const currentUser = await getCurrentUser();
 
       if (!currentUser) {
-        return {
-          success: false,
-          message: "User not found",
-          data: [], // Ensure a consistent return type (data is an array)
-        };
+        return;
       }
 
-      const orders = currentUser.orders ? JSON.parse(currentUser.orders) : [];
+      const orders: Order[] = currentUser.orders ? JSON.parse(currentUser.orders) : [];
 
       if (orders.length === 0) {
-        return {
-          success: true,
-          orderedItems: [],
-          orderDetails: [],
-        };
+        return [];
       }
 
-      const orderedItems = [];
-      const orderDetails = [];
-      orders.forEach((eachOrder) => {
-        orderedItems.push(eachOrder.productId);
-        orderDetails.push({
-          orderDate: eachOrder.orderDate,
-          orderStatus: eachOrder.orderStatus,
-          quantity: eachOrder.quantity,
-        });
-      });
+      const orderedItems = orders.map((eachOrder) => eachOrder.productId);
+      const orderDetails = orders.map((eachOrder) => ({
+        orderDate: eachOrder.orderDate,
+        orderStatus: eachOrder.orderStatus,
+        quantity: eachOrder.quantity,
+      }));
 
       const orderedProducts = await databases.listDocuments(
         appWriteConfig.databaseId,
@@ -216,29 +160,20 @@ export const getProducts = async (specific: string, searchQuery: string = ''): P
       );
 
       return {
-        success: true,
-        orderedItems: orderedProducts.documents || [],
+        orderedItems: orderedProducts.documents,
         orderDetails: orderDetails,
       };
-    } else if (specific === 'cart') {
+    } else if (specific === "cart") {
       const currentUser = await getCurrentUser();
 
       if (!currentUser) {
-        return {
-          success: false,
-          message: "User not found",
-          data: [],
-        };
+        return;
       }
 
-      const cartData = currentUser.cart ? JSON.parse(currentUser.cart) : [];
+      const cartData: string[] = currentUser.cart ? JSON.parse(currentUser.cart) : [];
 
       if (cartData.length === 0) {
-        return {
-          success: true,
-          message:"No products found",
-          data: [], 
-        };
+        return [];
       }
 
       const cartProducts = await databases.listDocuments(
@@ -246,19 +181,10 @@ export const getProducts = async (specific: string, searchQuery: string = ''): P
         appWriteConfig.filesCollectionsId,
         [Query.equal("$id", cartData)]
       );
-      return {
-        success: true,
-        data: cartProducts.documents || [],
-        message:"data fetched Successfully"
-      };
-    } else if (specific === 'search') {
-      if (!searchQuery || searchQuery.trim() === '') {
-        return {
-          success: false,
-          message: "Search query is empty",
-          searchResults: [],
-          relatedProducts: [],
-        };
+      return cartProducts.documents;
+    } else if (specific === "search") {
+      if (!searchQuery || searchQuery.trim() === "") {
+        return [];
       }
 
       const searchResults = await databases.listDocuments(
@@ -269,8 +195,6 @@ export const getProducts = async (specific: string, searchQuery: string = ''): P
 
       if (searchResults.documents.length === 0) {
         return {
-          success: false,
-          message: "No products found",
           searchResults: [],
           relatedProducts: [],
         };
@@ -288,17 +212,12 @@ export const getProducts = async (specific: string, searchQuery: string = ''): P
       );
 
       return {
-        success: true,
         searchResults: searchResults.documents || [],
         relatedProducts: relatedProducts.documents || [],
       };
     } else if (specific === "viewProduct") {
-      if (!searchQuery) {
-        return {
-          success: false,
-          message: "Product ID is required",
-          data: null, // Return null for missing data
-        };
+      if (searchQuery === "") {
+        return {};
       }
 
       const resultedProduct = await databases.listDocuments(
@@ -307,96 +226,18 @@ export const getProducts = async (specific: string, searchQuery: string = ''): P
         [Query.equal("$id", searchQuery)]
       );
 
-      return {
-        success: true,
-        data: resultedProduct.documents[0] || null, // Ensure valid data or null
-      };
+      return resultedProduct.documents[0];
     }
-  } catch (error) {
-    console.log('Failed to fetch products:', error.message);
-    return {
-      success: false,
-      message: "Failed to fetch products",
-      data: [], // Ensure consistent empty data
-    };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log("Error fetching products:", error.message);
+      throw error;
+    }
   }
 };
 
-
-
-//Remove Product Function started
-export const removeProductFromCart = async (id) => {
-  const currentUser = await getCurrentUser();
-
-  if(!currentUser){
-    return;
-  }
-
-  const {databases} = await serverAction();
-
-  try {
-    const userDocument = await databases.getDocument(
-      appWriteConfig.databaseId,
-      appWriteConfig.usersCollectionsId,
-      currentUser.$id
-    );
-
-    const currentUserCart = userDocument.cart ? JSON.parse(userDocument.cart) : [];
-
-    const updatedCart = currentUserCart.filter(cartId => cartId !== id);
-
-    const cartString = JSON.stringify(updatedCart);
-
-    await databases.updateDocument(
-      appWriteConfig.databaseId,
-      appWriteConfig.usersCollectionsId,
-      currentUser.$id,
-      {
-        cart: cartString
-      }
-    );
-
-    return{ 
-      success:true,
-      message:"Product removed from cart successfully"};
-  } catch (error) {
-    console.log('Failed to remove product from cart:', error.message);
-    return{
-      success:false,
-      message:"Failded to remove"
-    }
-  }
-}
-
-
-//Place Order functin started
-// interface PlaceOrderArgs {
-//   location: Address; 
-//   products: string[]; 
-//   quantity: Record<string, number>; 
-// }
-
-// interface PlaceOrderResult {
-//   message: string;
-//   success: boolean;
-// }
-
-interface Address {
-  country: string;
-  phone: string;
-  area: string;
-  pincode: string;
-  street: string;
-  landmark: string;
-}
-
-// interface User {
-//   $id: string;
-//   address: string;
-//   orders: string;
-// }
-
-export const placeOrder = async ({ location, products, quantity = {} }: { location: Address, products: string[], quantity?: Record<string, number> }) => {
+// Remove product from cart
+export const removeProductFromCart = async (id: string) => {
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
@@ -412,9 +253,56 @@ export const placeOrder = async ({ location, products, quantity = {} }: { locati
       currentUser.$id
     );
 
+    const currentUserCart: string[] = userDocument.cart ? JSON.parse(userDocument.cart) : [];
+
+    const updatedCart = currentUserCart.filter((cartId) => cartId !== id);
+
+    const cartString = JSON.stringify(updatedCart);
+
+    await databases.updateDocument(
+      appWriteConfig.databaseId,
+      appWriteConfig.usersCollectionsId,
+      currentUser.$id,
+      {
+        cart: cartString,
+      }
+    );
+
+    return "Product successfully removed from cart.";
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log("Error removing product from cart:", error.message);
+      throw error;
+    }
+  }
+};
+
+// Place order
+export const placeOrder = async ({
+  location = {},
+  products,
+  quantity = {},
+}: PlaceOrderProps) => {
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    return { message: "User not logged in.", success: false };
+  }
+
+  const { databases } = await serverAction();
+
+  try {
+    const userDocument = await databases.getDocument(
+      appWriteConfig.databaseId,
+      appWriteConfig.usersCollectionsId,
+      currentUser.$id
+    );
+
     let currentUserAddress;
     if (userDocument.address !== "") {
-      currentUserAddress = userDocument.address ? JSON.parse(userDocument.address) : {};
+      currentUserAddress = userDocument.address
+        ? JSON.parse(userDocument.address)
+        : {};
     } else {
       currentUserAddress = location;
       await databases.updateDocument(
@@ -422,14 +310,16 @@ export const placeOrder = async ({ location, products, quantity = {} }: { locati
         appWriteConfig.usersCollectionsId,
         currentUser.$id,
         {
-          address: JSON.stringify(currentUserAddress)
+          address: JSON.stringify(currentUserAddress),
         }
       );
     }
 
-    const currentOrders = userDocument.orders ? JSON.parse(userDocument.orders) : [];
+    const currentOrders: Order[] = userDocument.orders
+      ? JSON.parse(userDocument.orders)
+      : [];
 
-    const newOrders = products.map(eachId => ({
+    const newOrders = products.map((eachId: string) => ({
       productId: eachId,
       orderDate: new Date().toISOString(),
       orderStatus: "Confirmed",
@@ -443,17 +333,15 @@ export const placeOrder = async ({ location, products, quantity = {} }: { locati
       appWriteConfig.usersCollectionsId,
       currentUser.$id,
       {
-        orders: JSON.stringify(updatedOrders)
+        orders: JSON.stringify(updatedOrders),
       }
     );
 
-    return { message: "Order Placed successfully", success: true };
-  } catch (error) {
-    console.log('Failed to place order:', error.message);
-    return { message: "Failed to process!", success: false };
+    return { message: "Order placed successfully.", success: true };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log("Error placing order:", error.message);
+      return { message: "Order placement failed.", success: false };
+    }
   }
 };
-
-
-
-
