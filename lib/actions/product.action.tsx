@@ -227,6 +227,18 @@ export const getProducts = async (
       );
 
       return resultedProduct.documents[0];
+    } else if (specific === "collections"){
+      if(searchQuery === ""){
+        return [];
+      }
+
+      const result = await databases.listDocuments(
+        appWriteConfig.databaseId,
+        appWriteConfig.filesCollectionsId,
+        [Query.equal("category", searchQuery)]
+      )
+
+      return result;
     }
   } catch (error: unknown) {
     if (error instanceof Error) {

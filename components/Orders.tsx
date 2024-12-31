@@ -33,41 +33,47 @@ const Orders = async () => {
 
   return (
     <div>
-      <h1 className="text-[1.5vw]">Ordered Products:</h1>
-      <ul className="bordered p-4 my-2 sticky top-0 bg-white z-10">
-        <li className="grid grid-cols-10 gap-4 font-semibold">
-          <p className="col-span-2">Image</p>
-          <p className="col-span-2">Name</p>
-          <p className="col-span-3">Details</p>
-          <p className="col-span-1">Price</p>
-          <p className="col-span-1">Quantity</p>
-          <p className="col-span-1">Status</p>
-        </li>
-      </ul>
+      <h1 className="text-3xl">Orders</h1>
+      <div className="md:grid grid-cols-4 px-4 hidden">
+        <p className="col-span-2">PRODUCT</p>
+        <p className="col-span-1">QUANTITY</p>
+        <p className="col-span-1">TOTAL</p>
+      </div>
 
-      <ul className="overflow-y-scroll">
+      <div className="overflow-y-scroll px-4">
         {orderedItems.map((item, index) => {
           const order = orderDetails[index];
           return (
-            <div key={item.$id}>
-              <li className="grid grid-cols-10 gap-4 items-center mb-3">
-                <Image
-                  src={item.image}
-                  alt="product"
-                  width={100}
-                  height={100}
-                  unoptimized={true}
-                  className="rounded-md col-span-2"
-                />
-                <p className="col-span-2">{item.productName}</p>
-                <p className="col-span-3">{item.productDetails}</p>
-                <p className="col-span-1">{item.price}</p>
-                <p className="col-span-1">{order?.quantity || 1}</p>
-                <p className="col-span-1 text-green-400 font-semibold">
-                  {order?.orderStatus}
+            <div key={item.$id} className="mb-12 mt-2">
+              <div className="grid grid-cols-4 gap-4">
+                <div className="flex gap-2 md:col-span-2 col-span-4">
+                  <Image
+                    src={item.image}
+                    alt="product"
+                    width={100}
+                    height={100}
+                    unoptimized={true}
+                    className="rounded-md"
+                  /> 
+                  <div>
+                    <p className=" font-bold">{item.productName}</p>
+                    <div className="md:hidden">
+                      <p className="col-span-1">
+                        quantity: {order?.quantity || 1}
+                      </p>
+                      <p className="col-span-1">Rs: {(order?.quantity)*(item.price)}/-</p>
+                    </div>
+                    <p className=" text-green-400 font-semibold">
+                      Status: {order?.orderStatus}
+                    </p>
+                  </div>
+                </div>
+                <p className="col-span-1 md:block hidden">
+                  quantity: {order?.quantity || 1}
                 </p>
-              </li>
-              <div className="flex justify-between w-[100%] lg:flex-row flex-col">
+                <p className="col-span-1 md:block hidden">Rs: {(order?.quantity)*(item.price)}/-</p>
+              </div>
+              <div className="flex justify-between w-[100%] ">
                 <p>Ordered On: {formateDateTime(order?.orderDate)}</p>
                 <p>
                   Delivered By:{" "}
@@ -80,7 +86,7 @@ const Orders = async () => {
             </div>
           );
         })}
-      </ul>
+      </div>
     </div>
   );
 };

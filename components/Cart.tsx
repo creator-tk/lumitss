@@ -99,75 +99,61 @@ const Cart: React.FC = () => {
   };
 
   return (
-    <div className="px-4 lg:px-8 py-6 bg-gray-50 min-h-screen">
+    <div>
+      <h1 className="text-2xl font-bold mb-8">Your Cart</h1>
       {pageLoading ? (
         <Loading/>
       ) : cartProducts.length > 0 ? (
         cartProducts.map((product) => (
-          <div
-            key={product.$id}
-            className="flex flex-col sm:flex-row shadow-md p-4 gap-8 my-4 rounded-lg bg-white md:items-center items-start"
-          >
-            <Image
-              src={product.image}
-              alt="product"
-              width={200}
-              height={200}
-              unoptimized={true}
-              className="rounded-lg sm:w-1/4 w-[100%]"
-            />
-            <div className="flex flex-col gap-3 md:gap-2 py-2 md:py-3 w-full md:w-auto">
-              <div>
-                <p className="text-xl md:text-[2vw]">{product.productName}</p>
-                <p className="text-md md:text-[1vw]  text-gray-700">
-                  {product.productDetails}
-                </p>
-                <div className="flex flex-col md:flex-row md:gap-4 mt-2">
-                  <p className="text-gray-800 font-semibold">
-                    Offer Price: {product.price}/-
-                  </p>
-                  <p className="text-gray-500">
-                    Regular Price: {" "}
-                    <span className="line-through">
-                      {product.price * 1.5}
-                    </span>
-                    /-
-                  </p>
+          <div key={product.$id} className="mb-8">
+            <div
+              className="grid grid-cols-5 gap-2"
+            >
+              <Image
+                src={product.image}
+                alt="product"
+                width={200}
+                height={200}
+                unoptimized={true}
+                className="rounded-lg w-[100px] col-span-2 h-[100px]"
+              />
+              <div className="col-span-3">
+                <div>
+                  <p className="text-sm font-bold">{product.productName}</p>
+                  <p>Rs: {product.price}/- <span className="line-through text-gray-500">Rs{product.price*1.5}</span></p>
+                </div>
+                <div className="bordered flex p-2 !rounded-full justify-between w-[200px]">
+                  <OctagonMinus
+                    onClick={() =>
+                      updateQuantity(product.$id, (quantity[product.$id] || 1) - 1)
+                    }
+                    className="cursor-pointer"
+                  />
+                  <p>{quantity[product.$id] || 1}</p>
+                  <PlusCircleIcon
+                    onClick={() => {
+                      updateQuantity(product.$id, (quantity[product.$id] || 1) + 1);
+                    }}
+                    className="cursor-pointer"
+                  />
                 </div>
               </div>
-              <div className="bordered sm:w-1/4 flex justify-between p-2 !rounded-full 
-              !w-[50%]">
-                <OctagonMinus
-                  onClick={() =>
-                    updateQuantity(product.$id, (quantity[product.$id] || 1) - 1)
-                  }
-                  className="cursor-pointer"
-                />
-                <p>{quantity[product.$id] || 1}</p>
-                <PlusCircleIcon
-                  onClick={() => {
-                    updateQuantity(product.$id, (quantity[product.$id] || 1) + 1);
-                  }}
-                  className="cursor-pointer"
-                />
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 mt-2 sm:w-1/2">
-                <ActionButton
-                  action="remove"
-                  id={product.$id}
-                  style="bg-transparent text-black border border-gray-500 hover:bg-black hover:text-white py-2 px-4 rounded"
-                />
-                <Button
-                  onClick={() => handleOrderClick(product.$id)}
-                  disabled={actionLoading[product.$id]}
-                  className={`bg-blue-600 text-white hover:bg-blue-700 py-2 px-4 rounded md:w-[100%] ${
-                    actionLoading[product.$id] ? "cursor-not-allowed" : ""
-                  }`}
-                >
-                  {actionLoading[product.$id] ? <Loader2Icon className="animate-spin text-white"/> : "Order"}
-                </Button>
-              </div>
-              <p>Note: Your product costs less than 500rs/-. Delivery charges may apply 50/-</p>
+            </div>
+            <div className="w-[100%] flex gap-2 my-2  ">
+              <ActionButton
+                action="remove"
+                id={product.$id}
+                style="bg-transparent text-black border border-gray-500 hover:bg-black hover:text-white py-2 px-4 rounded !text-sm w-[150px]"
+              />
+              <Button
+                onClick={() => handleOrderClick(product.$id)}
+                disabled={actionLoading[product.$id]}
+                className={`bg-blue-600 text-white hover:bg-blue-700 py-2 px-4 rounded text-sm !w-[150px]${
+                  actionLoading[product.$id] ? "cursor-not-allowed" : ""
+                }`}
+              >
+                {actionLoading[product.$id] ? <Loader2Icon className="animate-spin text-white"/> : "Order"}
+              </Button>
             </div>
           </div>
         ))

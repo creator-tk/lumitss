@@ -35,7 +35,7 @@ const Footer: React.FC = () => {
   }, []);
 
   return (
-    <footer className="fixed bottom-0 w-full bg-gray-100 p-4 lg:hidden bg-opacity-80 bg-blur mt-8">
+    <footer className="fixed bottom-0 w-full bg-gray-100 p-4 lg:hidden bg-opacity-80 bg-blur mt-8 backdrop-blur-sm">
       <div className="flex justify-between w-[100%]">
         {user ? (
           <div className="flex items-center justify-between gap-4 w-[100%]">

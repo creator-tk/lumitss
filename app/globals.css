@@ -8,7 +8,7 @@ body {
 
 @layer base {
   *{
-    @apply scroll-smooth scroll-m-0;
+    @apply scroll-smooth scroll-m-0 !font-sans transition-all;
   }
   body{
     @apply bg-white text-black
@@ -86,7 +86,7 @@ body {
     @apply border-[1px] rounded-sm border-gray-400
   }
   .search_input {
-    @apply body-2 placeholder:body-1 lg:max-w-[600px] w-[100%] border-none px-4 py-6 text-lg lg:text-xl placeholder:text-gray-600 focus:outline-none focus:border-transparent rounded-2xl lg:rounded-full !important;
+    @apply body-2 placeholder:body-1 lg:max-w-[600px] w-[100%] border px-4 py-6 text-lg lg:text-xl placeholder:text-gray-600 focus:outline-none focus:border-transparent rounded-2xl lg:rounded-full !important;
   }
   .search_container{
     @apply flex bottom-[1px] border-gray-500 rounded-2xl lg:rounded-full lg:max-w-[600px] w-[100%] items-center bg-gray-300

@@ -10,6 +10,9 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+			clipPath: {
+        wave: "polygon(0% 60%, 25% 80%, 50% 60%, 75% 80%, 100% 60%, 100% 100%, 0% 100%)",
+      },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
@@ -68,7 +71,7 @@ const config: Config = {
   	}
   },
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate", "tailwind-scrollbar-hide")],
 };
 
 export default config

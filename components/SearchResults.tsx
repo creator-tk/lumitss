@@ -1,52 +1,57 @@
-import { getProducts } from '@/lib/actions/product.action'
-import Image from 'next/image'
-import Link from 'next/link'
-import React from 'react'
-import { ActionButton } from './ActionButton'
+"use client";
 
-const SearchResults = async ({query}) => {
-  const {searchResults, relatedProducts} = await getProducts("search", query);
+import { getProducts } from '@/lib/actions/product.action';
+import React, {useEffect, useState } from 'react';
+import DisplayProducts from './DisplayProducts';
+import { useToast } from '@/hooks/use-toast';
+import Loading from './Loader';
 
-  const resultedProducts = searchResults.length > 0 || relatedProducts.length > 0;
+const SearchResults = ({ query }) => {
+  const { toast } = useToast();
+
+  const [searchedProducts, setSearchedProducts] = useState([]);
+
+  const [searchRelatedProducts, setSearchRelatedProducts] = useState([]);
+
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const { searchResults, relatedProducts } = await getProducts("search", query);
+        setSearchedProducts(searchResults);
+        setSearchRelatedProducts(relatedProducts)
+      } catch (error) {
+        toast({
+          title: "Something went wrong. Please try again later.",
+        });
+        console.log(error.message);
+      } finally{
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [query, toast]);
 
   return (
-    <div className='md:px-20 py-2 px-10'>
-      <h1 className=' text-[3.5vh] md:text-2xl'>Search Results :</h1>
-      <div>
-        {resultedProducts ? (
-          searchResults.length > 0 ? searchResults : relatedProducts).map(eachProduct => (
-            <div key={eachProduct.$id} className='flex gap-8 shadow-gray-400 shadow-lg rounded-lg p-4 flex-shrink-0 flex-col sm:flex-row'>
-              <div className='sm:w-1/2 w-[100%]'>
-                <Link href={`/viewProduct?product=${eachProduct.$id}`}>
-                  <Image
-                    src={eachProduct.image}
-                    alt='Image'
-                    width={200}
-                    height={200}
-                    unoptimized={true}
-                    className='w-[100%] rounded-xl'
-                  />
-                </Link>
-              </div>
+    <div className="mb-8">
+      <h1 className="mt-4 mb-8">Search Results :</h1>
+      {!loading ? (
+        <DisplayProducts products={searchedProducts} />
+      ): <Loading/>}
 
-              <div className='flex flex-col gap-1'>
-                <p className='font-bold sm:text-[3vw] text-2xl'>{eachProduct.productName}</p>
-                <p className='text-[2vw]md:text-sm'>{eachProduct.productDetails}</p>
-                <p> Offer price:{eachProduct.price}/-</p>
-                <p> Regular price:<span className='line-through'>
-                  {eachProduct.price * 1.5}/-
-                  </span></p>
-                
-                <ActionButton style='w-fit' action="cart"/>
-              </div>
-            </div>
-          ))
-            : <div className='w-fill h-[80vh] flex-center'>
-            <p className='text-gray-600 text-[4vw]'>No Results Found!</p>
-          </div>}
-      </div>
+      <hr className='my-12'/>
+      {searchRelatedProducts.length > 0 && (
+        <>
+          <p className='mb-6'>Related Products</p>
+          <DisplayProducts products={searchRelatedProducts} to={4}/>
+        </>
+      )}
+
     </div>
-  )
-}
+  );
+};
 
-export default SearchResults
+export default SearchResults;
