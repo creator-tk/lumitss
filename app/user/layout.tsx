@@ -1,7 +1,7 @@
 import React from 'react'
 import { getCurrentUser } from '@/lib/actions/user.action'
 import { redirect } from 'next/navigation';
-// import Image from 'next/image';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -18,10 +18,10 @@ const layout = async ({children}:{children: React.ReactNode}) => {
     <div className='w-screen h-screen lg:px-[20%] lg:py-10 px-[5%] py-2'>
     <section className='mb-4 sticky top-0 flex lg:justify-between justify-center'>
       <Link href="/">
-        {/* <Image src='/logo.png' width={150} height={100} alt="Logo" className='w-[100px]'/> */}
-        <div>
+        <Image src='/lumitss.png' width={150} height={100} alt="Logo" className='w-[100px]'/>
+        {/* <div>
           <p className="from-accent-foreground lg:text-5xl text-4xl text-center ">LUMITSS</p>
-        </div>
+        </div> */}
       </Link>
 
       <Link href='/'>

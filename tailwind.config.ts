@@ -61,12 +61,23 @@ const config: Config = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
 			keyframes:{
-				loader:{
-					'0%, 100%':{transform:"rotateY(360deg)"}
+				flip:{
+				'0%, 100%': { transform: 'rotateX(0deg)', opacity: '1' }, 
+				'50%': { transform: 'rotateX(180deg)', opacity: '0' },
 				},
+
+				flipTop: {
+					'0%, 100%': { transform: 'rotateX(0deg)', opacity: '1' }, 
+					'50%': { transform: 'rotateX(-180deg)', opacity: '0' },
+				}, 
+
+				flipBottom:{
+					'0%, 100%': { transform: 'rotateX(0deg)', opacity: '1' }, 
+					'50%': { transform: 'rotateX(180deg)', opacity: '0' },
+				}
 			},
 			animation:{
-				loader:"loader 1s infinite"
+				flip: 'flip 1s infinite linear', flipTop: 'flipTop 1s infinite linear', flipBottom: 'flipBottom 1s infinite linear',
 			}
   	}
   },

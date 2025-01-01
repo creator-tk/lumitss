@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
-import FlipCartAnimation from "@/components/FlipCartAnimation";
+import FlipCartAnimation from "@/components/FlipCardAnimation";
 
 export default async function Home() {
   const products = await getProducts("all", "");
@@ -12,12 +12,23 @@ export default async function Home() {
   return (
     <main>
       <div className="my-4">
-        <div className="flex-center gap-6 flex-col md:mx-[20%] py-[10%]">
-          <h1 className="lg:text-4xl font-bold text-gray-800 text-center sm:text-2xl text-xl">
-            Your go-to store for unique and amazing finds
-          </h1>
-          <p className="text-center lg:text-xl text-sm">World wide Trending products now in India</p>
-          <Button className="lg:text-lg text-sm">EXPLORE NOW</Button>
+        <div className="relative flex-center w-fill h-[300px] overflow-hidden rounded-lg ml-2 my-6">
+
+          <div className="w-full h-30% ">
+            <video muted autoPlay playsInline loop className="h-full w-screen rounded-lg">
+              <source src="/Banner.mp4" className="w-full"/>
+            </video>
+          </div>
+
+          <div className="absolute  flex-center flex-col gap-2">
+            <h1 className="lg:text-4xl font-bold text-white text-center sm:text-2xl text-xl">
+              Welcome to LUMITSS store. 
+            </h1>
+            <p className="text-center text-white lg:text-xl text-sm">World wide Trending products now in India</p>
+            <Link href="/collections">
+              <Button className="lg:text-lg text-sm bg-white text-black">EXPLORE NOW</Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -25,7 +36,7 @@ export default async function Home() {
       <div className="lg:px-[15%] px-[5%] text-3xl mb-12">
         <h1 className="my-8"><b>Trending Right Now</b></h1>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.slice(0,4).map((eachProduct) => (
+          {products.slice(0,4).map((eachProduct: Product) => (
             <div
               key={eachProduct.$id}
               className="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
@@ -65,7 +76,7 @@ export default async function Home() {
         </div>
       </div>
 
-      {/**Demo Video */}
+      {/**Banner Video */}
       <div className="my-12 relative">
         <video muted autoPlay playsInline loop>
           <source src="/demoVideo.mp4"/>
@@ -78,7 +89,7 @@ export default async function Home() {
           Check Our All Collections
         </b></h1>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-          {products.slice(4,8).map((eachProduct) => (
+          {products.slice(4,8).map((eachProduct:Product) => (
             <div
               key={eachProduct.$id}
               className="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
@@ -121,7 +132,8 @@ export default async function Home() {
       {/**Animation */}
       <div className="lg:px-[15%] px-[5%] flex-center flex-col">
         <h1 className="text-center text-5xl my-8"><b>Limited Time!</b></h1>
-        <FlipCartAnimation/>
+        <FlipCartAnimation text={["SALE ON ", new Date().toLocaleDateString()]}
+        interval={3000} />
         <p className="text-center">Our limited time 50% off sale is ending in few days..</p>
       </div>
     </main>

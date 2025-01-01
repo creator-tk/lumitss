@@ -216,7 +216,7 @@ export const getProducts = async (
         relatedProducts: relatedProducts.documents || [],
       };
     } else if (specific === "viewProduct") {
-      if (searchQuery === "") {
+      if (searchQuery === "" || !searchQuery) {
         return {};
       }
 
@@ -228,7 +228,7 @@ export const getProducts = async (
 
       return resultedProduct.documents[0];
     } else if (specific === "collections"){
-      if(searchQuery === ""){
+      if(searchQuery === "" || !searchQuery){
         return [];
       }
 
@@ -348,6 +348,18 @@ export const placeOrder = async ({
         orders: JSON.stringify(updatedOrders),
       }
     );
+
+    const formData = new FormData();
+    formData.append("access_key", process.env.WEB3FORM_ACCESS_KEY || "");
+    formData.append("name", currentUser.fullName);
+    formData.append("message", "Order Placed by the customer");
+
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      body: formData
+    })
+
+    console.log("Response from web3 forms",response.json());
 
     return { message: "Order placed successfully.", success: true };
   } catch (error: unknown) {

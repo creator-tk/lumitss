@@ -5,6 +5,7 @@ import React from 'react';
 
 const Profile = async () => {
   const currentUser = await getCurrentUser();
+  const parsedAddress = JSON.parse(JSON.parse(currentUser?.address));
 
   if (!currentUser) {
     redirect('/signIn');
@@ -12,7 +13,7 @@ const Profile = async () => {
   }
 
   return (
-    <div className="mx-52 bordered h-[95%] !rounded-2xl shadow-2xl p-4">
+    <div className="">
       <h1 className="text-[2vw]">PROFILE:</h1>
       <div className="px-8">
         <hr className="my-4" />
@@ -20,10 +21,17 @@ const Profile = async () => {
         <hr className="my-4" />
         <h2>Email: {currentUser.email}</h2>
         <hr className="my-4" />
-        <h2>Phone: {currentUser.phone || 'Not provided'}</h2>
+        <h2>Phone: {parsedAddress?.phone || 'Not provided'}</h2>
         <hr className="my-4" />
-        <h2>Address: {currentUser.address || 'Not provided'}</h2>
-        <hr className="my-4" />
+      </div>
+
+      <div>
+        <p>Address:</p>
+        <div className='px-6'>
+          <p>{currentUser?.fullName}, <br /> {parsedAddress?.street}, <br /> {parsedAddress?.pincode}, <br /> {parsedAddress?.landmark}, <br /> {parsedAddress?.country}</p>
+        </div>
+
+
       </div>
       <div className="flex justify-end">
         <ActionButton

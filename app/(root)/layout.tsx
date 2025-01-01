@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster'
 
 const layout = ({children}:{children: React.ReactNode}) => {
   return (
-    <main className='remove-scrollbar'>
+    <main className='remove-scrollbar my-4'>
       <Header/>
       {children}
       <div className='py-[2%] px-[15%] bg-black text-white mt-8 lg:mb-0 mb-20'>

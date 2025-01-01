@@ -9,7 +9,7 @@ import { Loader2 } from 'lucide-react';
 const Admin_Orders =  () => {
   const [users, setUsers] = useState([]);
   const [date, setDate] = useState("");
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<Product[]>([]);
   const [pageLoading, setPageLoading] = useState(false);
   const [ordersLoading, setOrdersLoading]=useState(false);
 
@@ -24,6 +24,7 @@ const Admin_Orders =  () => {
     filteredOrders();
     setOrdersLoading(false);
   }
+  console.log(users)
     
   useEffect(()=>{
     setPageLoading(true);

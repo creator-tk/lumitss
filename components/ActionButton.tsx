@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React from "react";
 import { Button } from "./ui/button";
@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
 interface ActionButtonProps {
-  id?: string;
+  id?: string | undefined;
   action?: "cart" | "remove" | "logout" | "update";
   style?: string;
 }
@@ -30,27 +30,31 @@ export const ActionButton: React.FC<ActionButtonProps> = ({ id, action, style })
       }
 
       let success: string | undefined;
-      if (action === "cart") {
-        success = await addProductToCart(id);
-      } else if (action === "remove") {
-        success = await removeProductFromCart(id);
-        if (success) {
-          window.location.reload();
+      if (id) {
+        if (action === "cart") {
+          success = await addProductToCart(id);
+        } else if (action === "remove") {
+          success = await removeProductFromCart(id);
+          if (success) {
+            window.location.reload();
+          }
+        } else if (action === "logout") {
+          success = await signOutUser();
+        } else if (action === "update") {
+          return toast({ title: "Update Functionality is not implemented yet" });
         }
-      } else if (action === "logout") {
-        success = await signOutUser();
-      } else if( action === "update"){
-        return toast({title:"Update Functionality is not implemented yet"})
-      }
 
-      if (success) {
-        toast({
-          title: `Action completed successfully`,
-          description: `Product ${action === "cart" ? "added to cart" : action === "remove" ? "removed from cart" : "logout completed"} successfully`,
-          duration: 3000,
-        });
+        if (success) {
+          toast({
+            title: `Action completed successfully`,
+            description: `Product ${action === "cart" ? "added to cart" : action === "remove" ? "removed from cart" : "logout completed"} successfully`,
+            duration: 3000,
+          });
+        } else {
+          throw new Error("Action failed");
+        }
       } else {
-        throw new Error("Action failed");
+        throw new Error("ID is required for this action");
       }
     } catch (error: unknown) {
       console.error(error);
@@ -67,20 +71,28 @@ export const ActionButton: React.FC<ActionButtonProps> = ({ id, action, style })
   return (
     <Button
       className={`w-full ${style}`}
-      onClick={() => performAction(action)}
+      onClick={() => {
+        if (action) {
+          performAction(action);
+        } else {
+          toast({ title: "Action is required" });
+        }
+      }}
       disabled={loading}
     >
       {loading
         ? action === "cart"
-          ? (<><Loader2 className="animate-spin"/> Adding to Cart...</>)
+          ? (<><Loader2 className="animate-spin" /> Adding to Cart...</>)
           : action === "remove"
-          ? (<><Loader2 className="animate-spin"/> Removing from Cart...</>)
-          : "Logging out..."
+            ? (<><Loader2 className="animate-spin" /> Removing from Cart...</>)
+            : action === "update"
+              ? "Updating" : "Logging out..."
         : action === "cart"
-        ? "Add to Cart"
-        : action === "remove"
-        ? "Remove from Cart"
-        : "Logout"}
+          ? "Add to Cart"
+          : action === "remove"
+            ? "Remove from Cart"
+            : action === "update"
+              ? "Update" : "Logout"}
     </Button>
   );
 };

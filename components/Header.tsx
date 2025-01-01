@@ -1,6 +1,6 @@
 "use client";
 
-// import Image from "next/image";
+import Image from "next/image";
 import React, { useState, useEffect, KeyboardEvent } from "react";
 import { Input } from "./ui/input";
 import { LoaderPinwheel, Package, Search, ShoppingCart, X } from "lucide-react";
@@ -48,6 +48,11 @@ const Header: React.FC = () => {
     }
   };
 
+  const selectCategory = (category) =>{
+    setCategory(category)
+    router.push(`/collections?category=${category}`)
+  }
+
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -57,18 +62,17 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className="lg:grid grid-cols-12 py-[1.5%] px-[15%] ">
+      <header className="lg:grid grid-cols-12 mb-6 lg:px-[15%] px-[2%]">
         <Link href="/" className="col-span-3" onClick={()=>setCategory("")}>
-          {/* <Image
-            src="/logo.svg"
-            alt="logo"
-            width={120}
-            height={100}
-            className="w-[80px] lg:w-[120px]"
-          /> */}
-          <div>
-            <p className="from-accent-foreground lg:text-5xl text-4xl text-center ">LUMITSS</p>
-          </div>
+        <div className="lg:w-auto w-[100%] flex justify-center items-center sm:relative">
+          <Image
+              src="/lumitss.png"
+              alt="logo"
+              width={120}
+              height={100}
+              className="w-[120px] lg:w-[150px]"
+            />
+        </div> 
         </Link>
 
         <div className="search_container w-[100%] !bg-transparent lg:flex items-center col-span-6 hidden ">
@@ -132,15 +136,32 @@ const Header: React.FC = () => {
           )}
         </div>
       </header>
+
+      {/**category */}
       <div className="px-[18%] lg:flex justify-between hidden">
-        <p className={`cursor-pointer ${category === "gift" && "underline"}`} onClick={()=>setCategory("gift")}>Gift</p>
+        <p className={`cursor-pointer ${category === "gift" && "underline"}`} onClick={()=>selectCategory("gift")}>Gift</p>
 
-        <p className={`cursor-pointer ${category === "kitchen" && "underline"}`} onClick={()=>setCategory("kitchen")}>Home & kitchen</p>
+        <p className={`cursor-pointer ${category === "kitchen" && "underline"}`} onClick={()=>selectCategory("kitchen")}>Home & kitchen</p>
 
-        <p className={`cursor-pointer ${category === "desktop" && "underline"}`} onClick={()=>setCategory("desktop")}>Desktop Decor</p>
+        <p className={`cursor-pointer ${category === "desktop" && "underline"}`} onClick={()=>selectCategory("desktop")}>Desktop Decor</p>
 
-        <p className={`cursor-pointer ${category === "unique" && "underline"}`} onClick={()=>setCategory("unique")}>Unique Items</p>
+        <p className={`cursor-pointer ${category === "unique" && "underline"}`} onClick={()=>selectCategory("unique")}>Unique Items</p>
       </div>
+
+      <div className="search_container w-[100%] !bg-transparent lg:hidden items-center col-span-6 flex px-6 gap-2 bodered !rounded">
+          <Input
+            placeholder="Search"
+            type="text"
+            className="search_input lg:w-auto w-[100%] font-sans block lg:hidden"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <Search
+            className="w-[5vw] cursor-pointer block lg:hidden"
+            onClick={handleSearch}
+          />
+        </div>
       
       {showCart && (
         <div className="fixed right-0 top-0 bottom-0 bg-white w-[360px] bordered z-10 p-4 overflow-y-scroll scroll-b">
