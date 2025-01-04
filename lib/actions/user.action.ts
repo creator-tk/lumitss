@@ -172,3 +172,40 @@ export const signOutUser = async () => {
     handleError(error, "Failed to sign out user");
   }
 };
+
+export const updateOrderStatus = async (userId: string, productId: string, newStatus: string) => {
+  const { databases } = await serverAction();
+
+  try {
+    const userDocument = await databases.getDocument(
+      appWriteConfig.databaseId,
+      appWriteConfig.usersCollectionsId,
+      userId
+    );
+
+    const orders = JSON.parse(userDocument.orders);
+
+    const updatedOrders = orders.map((order) => {
+      if (order.productId === productId) {
+        return {
+          ...order,
+          orderStatus: newStatus, 
+        };
+      }
+      return order;
+    });
+
+    await databases.updateDocument(
+      appWriteConfig.databaseId,
+      appWriteConfig.usersCollectionsId,
+      userId,
+      {
+        orders: JSON.stringify(updatedOrders),
+      }
+    );
+
+    console.log(`Order status updated successfully for user ${userId}`);
+  } catch (error) {
+    console.error("Error updating order status:", error.message);
+  }
+};

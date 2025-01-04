@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -18,15 +20,22 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { addProduct } from '@/lib/actions/product.action';
+import { addProduct, updateProductDetails } from '@/lib/actions/product.action';
 import { useToast } from '@/hooks/use-toast';
 
 interface AddProductProps {
   Open: boolean;
   onClose: () => void;
-  productId: string;
+  productId?: string;
   field: string;
-  setCount: (value:number) => void;
+  setCount: (value: number) => void;
+  productData?: {
+    productName?: string;
+    price?: number;
+    productDetails?: string;
+    category?: string;
+    image?: File | null;
+  };
 }
 
 const productSchema = z.object({
@@ -34,59 +43,107 @@ const productSchema = z.object({
   price: z.coerce.number(),
   image: z
     .any()
-    .refine((file) => file instanceof File && file.size > 0, { message: "Image is required" }),
+    .refine(
+      (file, ctx) => {
+        if (!file && !ctx.parent.productId) {
+          return false;
+        }
+        return true;
+      },
+      { message: "Image is required" }
+    )
+    .optional(),
   productDetails: z.string().optional(),
-  category: z.string().optional(), 
+  category: z.string().optional(),
 });
 
+const ProductHandler: React.FC<AddProductProps> = ({ Open, onClose, productId, field, setCount, productData }) => {
 
-const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, setCount }) => {
   const [loading, setLoading] = useState<boolean>(false);
+  const [fieldRequired, setFieldRequired] = useState('');
 
-  const {toast} = useToast();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       productName: "",
       price: 0,
-      image: undefined,
-      productDetails:"",
-      category: ""
+      image: null,
+      productDetails: "",
+      category: "",
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof productSchema>) => {
-    console.log("Uploaded Image", values.image)
-    if (!(values.image instanceof File)) {
-      console.error("Image is not a valid File.");
-      throw new Error("Image is not a file")
+
+  useEffect(() => {
+    if (productData) {
+      form.reset({
+        productName: productData.productName || "",
+        price: productData.price || 0,
+        image: productData.image || null,
+        productDetails: productData.productDetails || "",
+        category: productData.category || "",
+      });
+      setFieldRequired(false);
+    } else {
+      setFieldRequired(true);
     }
+  }, [productData, form]);
+
+  const onSubmit = async (values: z.infer<typeof productSchema>) => {
+    console.log("On Submit function triggered")
     setLoading(true);
     try {
-      const product = await addProduct({
-        productName: values.productName,
-        price: values.price,
-        image: values.image,
-        productDetails: values?.productDetails,
-        category: values?.category,
-      });
+      if (productId) {
+        if (!values) {
+          return toast({
+            title: "Something unexpected happened"
+          });
+        }
+        console.log(productId, "From product Handlder")
 
-      if (product) {
-        setCount((prev) => prev = prev+1); 
+        await updateProductDetails(
+          productId,
+          {
+            productName: values?.productName,
+            price: values?.price,
+            image: values?.image,
+            productDetails: values?.productDetails,
+            category: values?.category,
+          }
+        );
+
         toast({
-          title: "Product Added Successfully"
+          title: "Product Updated Successfully"
+        })
+      } else {
+        console.log("Add product function called")
+        if (!values) {
+          return toast({
+            title: "Something unexpected happened"
+          });
+        }
+        await addProduct({
+          productName: values.productName,
+          price: values.price,
+          image: values.image,
+          productDetails: values?.productDetails,
+          category: values?.category,
         });
-      } else{
-        onClose();
-        throw new Error("Something went wrong Plz after some time")
+
+        setCount((prev) => prev + 1);
+        toast({
+          title: "Product Added Successfully",
+        });
       }
+
       onClose();
     } catch (error) {
       console.log(error);
       toast({
-        title: "Some unexpeted happend try after some time."
-      })
+        title: "Unexpected error occurred. Try again later.",
+      });
       alert((error as Error).message);
     } finally {
       setLoading(false);
@@ -110,7 +167,7 @@ const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, setCount 
                 <FormItem>
                   <FormLabel>Product Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="name" {...field} required />
+                    <Input placeholder="name" {...field} required={!productId} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -125,7 +182,7 @@ const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, setCount 
                   <FormItem>
                     <FormLabel>Price</FormLabel>
                     <FormControl>
-                      <Input placeholder="price" {...field} required type='number' />
+                      <Input placeholder="price" {...field} required={!productId} type='number' />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -138,7 +195,7 @@ const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, setCount 
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <FormControl>
-                      <Input placeholder="category" {...field} required /> 
+                      <Input placeholder="category" {...field} required={!productId} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -170,7 +227,7 @@ const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, setCount 
                     <Input
                       type="file"
                       onChange={(e) => field.onChange(e.target.files?.[0])}
-                      required
+                      required={fieldRequired}
                     />
                   </FormControl>
                   <FormMessage />
@@ -178,7 +235,9 @@ const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, setCount 
               )}
             />
 
-            <Button className={`${loading && "cursor-not-allowed"} text-[1vw]`} type="submit" disabled={loading}>{loading ? "Loading..." : field}</Button>
+            <Button className={`${loading && "cursor-not-allowed"} text-[1vw]`} type="submit" disabled={loading}>
+              {loading ? "Loading..." : productId ? "Update Product" : "Add Product"}
+            </Button>
           </form>
         </Form>
       </DialogContent>
@@ -186,4 +245,4 @@ const AddProduct: React.FC<AddProductProps> = ({ Open, onClose, field, setCount 
   );
 };
 
-export default AddProduct;
+export default ProductHandler;

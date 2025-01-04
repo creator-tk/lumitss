@@ -7,7 +7,7 @@ import { constructImageUrl, parseStringify } from "../utils";
 import { handleError } from "./user.action";
 import { InputFile } from "node-appwrite/file";
 import { getCurrentUser } from "./user.action";
-
+// import razorpay from "razorpay";
 
 // Fetch all products
 export const getAllProducts = async () => {
@@ -135,34 +135,35 @@ export const getProducts = async (
       return JSON.parse(JSON.stringify(result.documents));
     } else if (specific === "orders") {
       const currentUser = await getCurrentUser();
-
+    
       if (!currentUser) {
         return;
       }
-
+    
       const orders: Order[] = currentUser.orders ? JSON.parse(currentUser.orders) : [];
-
+    
       if (orders.length === 0) {
         return [];
       }
-
-      const orderedItems = orders.map((eachOrder) => eachOrder.productId);
-      const orderDetails = orders.map((eachOrder) => ({
-        orderDate: eachOrder.orderDate,
-        orderStatus: eachOrder.orderStatus,
-        quantity: eachOrder.quantity,
-      }));
-
-      const orderedProducts = await databases.listDocuments(
-        appWriteConfig.databaseId,
-        appWriteConfig.filesCollectionsId,
-        [Query.equal("$id", orderedItems)]
+    
+      const orderedProductsDetails = await Promise.all(
+        orders.map(async (eachOrder) => {
+          const productDetails = await databases.getDocument(
+            appWriteConfig.databaseId,
+            appWriteConfig.filesCollectionsId,
+            eachOrder.productId
+          );
+    
+          return {
+            productDetails,
+            orderDate: eachOrder.orderDate,
+            orderStatus: eachOrder.orderStatus,
+            quantity: eachOrder.quantity,
+          };
+        })
       );
-
-      return {
-        orderedItems: orderedProducts.documents,
-        orderDetails: orderDetails,
-      };
+    
+      return orderedProductsDetails;   
     } else if (specific === "cart") {
       const currentUser = await getCurrentUser();
 
@@ -294,6 +295,7 @@ export const placeOrder = async ({
   location = {},
   products,
   quantity = {},
+  price,
 }: PlaceOrderProps) => {
   const currentUser = await getCurrentUser();
 
@@ -327,15 +329,26 @@ export const placeOrder = async ({
       );
     }
 
-    const currentOrders: Order[] = userDocument.orders
+    let currentOrders: Order[] = userDocument.orders
       ? JSON.parse(userDocument.orders)
       : [];
+
+    const currentDate = new Date();
+
+    currentOrders = currentOrders.filter((eachOrder) => {
+      const orderDate = new Date(eachOrder.orderDate);
+      const timeDifference = currentDate.getTime() - orderDate.getTime();
+      const daysDifference = timeDifference / (1000 * 60 * 60 * 24);
+
+      return daysDifference <= 15; 
+    });
 
     const newOrders = products.map((eachId: string) => ({
       productId: eachId,
       orderDate: new Date().toISOString(),
       orderStatus: "Confirmed",
       quantity: quantity[eachId] || 1,
+      price: price * (quantity[eachId] || 1),
     }));
 
     const updatedOrders = [...currentOrders, ...newOrders];
@@ -354,12 +367,10 @@ export const placeOrder = async ({
     formData.append("name", currentUser.fullName);
     formData.append("message", "Order Placed by the customer");
 
-    const response = await fetch("https://api.web3forms.com/submit", {
+    await fetch("https://api.web3forms.com/submit", {
       method: "POST",
-      body: formData
-    })
-
-    console.log("Response from web3 forms",response.json());
+      body: formData,
+    });
 
     return { message: "Order placed successfully.", success: true };
   } catch (error: unknown) {
@@ -369,3 +380,63 @@ export const placeOrder = async ({
     }
   }
 };
+
+
+//updating the product details
+export const updateProductDetails = async (
+  productId: string,
+  {
+    productName,
+    price,
+    productDetails,
+    category,
+    image,
+  }: {
+    productName?: string;
+    price?: number;
+    productDetails?: string;
+    category?: string;
+    image?: File | null;
+  }
+) => {
+
+  const { storage, databases } = await serverAction();
+  let uploadedImage;
+
+  try {
+  
+    if (image instanceof File) {
+      uploadedImage = await storage.updateFile(
+        appWriteConfig.bucketId,
+        productId, 
+        image
+      );
+    }
+
+    
+    const productDocument = {
+      productName,
+      price,
+      productDetails,
+      category,
+      image: uploadedImage ? constructImageUrl(uploadedImage.$id) : undefined,
+      imageId: uploadedImage?.$id || undefined,
+    };
+
+  
+    const result = await databases.updateDocument(
+      appWriteConfig.databaseId,
+      appWriteConfig.filesCollectionsId,
+      productId,  
+      productDocument 
+    );
+
+    return result;
+  } catch (error: unknown) {
+    handleError(error?.message || "Unknown error occurred", "Unable to update product.");
+    throw error;
+  }
+};
+
+
+

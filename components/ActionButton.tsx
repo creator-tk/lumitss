@@ -41,7 +41,7 @@ export const ActionButton: React.FC<ActionButtonProps> = ({ id, action, style })
         } else if (action === "logout") {
           success = await signOutUser();
         } else if (action === "update") {
-          return toast({ title: "Update Functionality is not implemented yet" });
+          return toast({ title: "Not available right now! please contact us for any querys or updates." });
         }
 
         if (success) {

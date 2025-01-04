@@ -1,58 +1,134 @@
-"use client"
+"use client";
 
-import { fetchAllUsers, fetchOrders } from '@/lib/serverAction';
-import React, { useEffect, useState } from 'react'
-import Loading from './Loader';
-import { Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { fetchAllUsers, fetchOrders } from "@/lib/serverAction";
+import Loading from "./Loader";
+import { updateOrderStatus } from "@/lib/actions/user.action";
+import { useToast } from "@/hooks/use-toast";
+import { CheckCircle2, Loader2 } from "lucide-react";
 
-
-const Admin_Orders =  () => {
-  const [users, setUsers] = useState([]);
-  const [date, setDate] = useState("");
-  const [orders, setOrders] = useState<Product[]>([]);
-  const [pageLoading, setPageLoading] = useState(false);
-  const [ordersLoading, setOrdersLoading]=useState(false);
-
-  const onChangeHandler = (e)=>{
-    const date = e.target.value;
-    setDate(date);
-    setOrdersLoading(true);
-    const filteredOrders = async () =>{
-      const orders = await fetchOrders(date);
-      setOrders(orders)
-    }
-    filteredOrders();
-    setOrdersLoading(false);
-  }
-  console.log(users)
-    
-  useEffect(()=>{
-    setPageLoading(true);
-    const fetchData = async ()=>{
-      const result = await fetchAllUsers();
-      setUsers(result);
-    }
-    fetchData();
-    setPageLoading(false);
-  },[date])
-
-  return (
-    <div>
-      <input type="date" onChange={onChangeHandler} />
-      {pageLoading ? (
-        <Loading/>
-      ):(!ordersLoading ? (
-          orders.length > 0 ? (
-            orders.map(eachOrder => (
-              <ul key={eachOrder.$id}>
-                <li>{eachOrder.productName}</li>
-              </ul>
-            ))
-          ):(<div>No Orders Yet</div>)
-        ):<Loader2/>
-      )}
-    </div>
-  )
+interface OrderType {
+  productId: string;
+  orderDate: string;
+  orderStatus: string;
+  quantity: number;
 }
 
-export default Admin_Orders
+const AdminOrders = () => {
+  const [orders, setOrders] = useState<OrderType[]>([]);
+  const [date, setDate] = useState<string>("");
+  const [pageLoading, setPageLoading] = useState<boolean>(true);
+  const [statusLoading, setStatusLoading] = useState(false);
+  const {toast} = useToast();
+  const [status, setStatus] = useState<string>("confirmed"); 
+
+  const onChangeHandler = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPageLoading(true);
+    const selectedDate = e.target.value;
+    setDate(selectedDate);
+    const filteredOrders = await fetchOrders(selectedDate);
+    setOrders(filteredOrders || []);
+    setPageLoading(false);
+  };
+
+  const handleStatusChange = async (userId, productId, status) => {
+    try {
+      setStatus(status);
+      setStatusLoading(true);
+      await updateOrderStatus(userId, productId, status);
+
+      toast({
+        title:"Status Updated"
+      })
+      setStatusLoading(false)
+    } catch (error) {
+      toast({
+        title:"Some thing went wrong"
+      })
+      console.log(error.message)
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setPageLoading(true);
+      await fetchAllUsers();
+
+      if (!date) {
+        const todayOrders = await fetchOrders();
+        setOrders(todayOrders || []);
+      }
+
+      setPageLoading(false)
+    };
+
+    fetchData();
+  }, [date, status]);
+
+  return (
+    <div className="p-4">
+      <input
+        type="date"
+        className="mb-4 p-2 border rounded"
+        onChange={onChangeHandler}
+      />
+      <ul className="grid grid-cols-10">
+        <li className="col-span-1 font-bold text-xl">UserName</li>
+        <li className="col-span-3 font-bold text-xl">Address</li>
+        <li className="col-span-1 font-bold text-xl">Order Date</li>
+        <li className="col-span-3 font-bold text-xl">Product Details</li>
+        <li className="col-span-1 font-bold text-xl">Quantity</li>
+        <li className="col-span-1 font-bold text-xl">Order Status</li>
+      </ul>
+
+      {pageLoading ? (
+        <Loading />
+      ) : orders.length > 0 ? (
+        orders.map((eachOrder, index) => {
+          return (
+            <ul key={index} className="grid grid-cols-10 gap-4 my-4">
+              <li className="col-span-1">{eachOrder?.userName || "Unknown User"}</li>
+              <li className="col-span-3 truncate">
+                {eachOrder?.address || "No Address Available"}
+              </li>
+              <li className="col-span-1">{eachOrder?.orderDate.split("T")[0]}</li>
+              <li className="col-span-3">{eachOrder?.productName}</li>
+              <li className="col-span-1">{eachOrder?.quantity}</li>
+              <li className="col-span-1 font-bold">
+
+                <span className="text-green-600">
+                  {eachOrder?.orderStatus === "Couriered"? (
+                  <span>{eachOrder?.orderStatus}  <CheckCircle2 className="inline-block"/></span>  
+                  ): (<span className="text-orange-800">{eachOrder?.status}</span>)}
+                </span>
+                <div className="flex gap-2">
+                  {!statusLoading ? (
+                    <select
+                      className={`px-4 py-2 rounded-lg text-xl font-semibold `}
+                      value={status}
+                      onChange={(e)=>handleStatusChange(eachOrder?.userId, eachOrder?.productId, e.target.value)}
+                    >
+                      <option value=""></option>
+                      <option value="confirmed" className="text-orange-600">
+                        Order Confirmed
+                      </option>
+                      <option value="Couriered" className="text-green-600">
+                        Order Couriered
+                      </option>
+                    </select>
+                  ): <Loader2 className="animate-spin"/>}
+                </div>
+              </li>
+            </ul>
+          );
+        })
+      ) : (
+        <div className="flex justify-center items-center h-full text-3xl text-gray-700">
+          No Orders!
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AdminOrders;

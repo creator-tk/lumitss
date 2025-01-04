@@ -1,12 +1,11 @@
 import React from "react";
 import { fetchAllUsers } from "@/lib/serverAction";
-import Loading from "./Loader";
 
 
 const Users: React.FC = async () => {
-  const users = await fetchAllUsers();
+  const {users} = await fetchAllUsers();
 
-  return (
+  return ( 
     <div>
       <div className="grid grid-cols-11 gap-3 p-2 bordered my-2 sticky top-0">
         <p className="col-span-2 text-[1.3vw]">Name</p>
@@ -26,10 +25,8 @@ const Users: React.FC = async () => {
             <hr />
           </React.Fragment>
         ))
-      ) : !loading ? (
-        <p className="text-center text-gray-300">No users Signed Yet!</p>
       ) : (
-        <Loading/>
+        <p className="text-center text-gray-300">No users Signed Yet!</p>
       )}
     </div>
   );

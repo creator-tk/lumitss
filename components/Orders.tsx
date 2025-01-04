@@ -24,12 +24,10 @@ type OrderedProducts = {
 
 const Orders = async () => {
   const orderedProducts: OrderedProducts | null = await getProducts("orders");
-
+  
   if (!orderedProducts) return <p>No Orders yet</p>;
 
-  const { orderedItems, orderDetails } = orderedProducts;
-
-  if (!orderedItems?.length) return <p>No Orders</p>;
+  if (!orderedProducts?.length) return <p>No Orders</p>;
 
   return (
     <div>
@@ -41,14 +39,13 @@ const Orders = async () => {
       </div>
 
       <div className="overflow-y-scroll px-4">
-        {orderedItems.map((item, index) => {
-          const order = orderDetails[index];
+        {orderedProducts.map((item, index) => {
           return (
-            <div key={item.$id} className="mb-12 mt-2">
+            <div key={index} className="mb-12 mt-2">
               <div className="grid grid-cols-4 gap-4">
                 <div className="flex gap-2 md:col-span-2 col-span-4">
                   <Image
-                    src={item.image}
+                    src={item?.productDetails?.image}
                     alt="product"
                     width={100}
                     height={100}
@@ -56,29 +53,29 @@ const Orders = async () => {
                     className="rounded-md"
                   /> 
                   <div>
-                    <p className=" font-bold">{item.productName}</p>
+                    <p className=" font-bold">{item?.productDetails?.productName}</p>
                     <div className="md:hidden">
                       <p className="col-span-1">
-                        quantity: {order?.quantity || 1}
+                        quantity: {item?.quantity || 1}
                       </p>
-                      <p className="col-span-1">Rs: {(order?.quantity)*(item.price)}/-</p>
+                      <p className="col-span-1">Rs: {(item?.quantity)*(item?.productDetails?.price)}/-</p>
                     </div>
                     <p className=" text-green-400 font-semibold">
-                      Status: {order?.orderStatus}
+                      Status: {item?.orderStatus}
                     </p>
                   </div>
                 </div>
                 <p className="col-span-1 md:block hidden">
-                  quantity: {order?.quantity || 1}
+                  quantity: {item?.quantity || 1}
                 </p>
-                <p className="col-span-1 md:block hidden">Rs: {(order?.quantity)*(item.price)}/-</p>
+                <p className="col-span-1 md:block hidden">Rs: {(item?.quantity)*(item?.productDetails?.price)}/-</p>
               </div>
               <div className="flex justify-between w-[100%] ">
-                <p>Ordered On: {formateDateTime(order?.orderDate)}</p>
+                <p>Ordered On: {formateDateTime(item?.orderDate)}</p>
                 <p>
                   Delivered By:{" "}
                   <span className="text-green-400 font-bold">
-                    {formateDateTime(order?.orderDate, 7)}
+                    {formateDateTime(item?.orderDate, 7)}
                   </span>
                 </p>
               </div>

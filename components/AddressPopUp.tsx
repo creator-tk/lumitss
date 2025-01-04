@@ -17,17 +17,16 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { placeOrder } from "@/lib/actions/product.action";
-import { useRouter } from "next/navigation";
+import { Loader } from "lucide-react";
 
 interface AddressPopUpProps {
   isOpen: boolean;
   onClose: () => void;
-  productId: string;
-  quantity: object;
+  popUpVisible: ()=>void;
+  paymentAddress: ()=>void;
 }
 
-const AddressPopUp = ({ isOpen, onClose, productId, quantity }: AddressPopUpProps) => {
+const AddressPopUp = ({ isOpen, onClose, popUpVisible, paymentAddress }: AddressPopUpProps) => {
   const [address, setAddress] = useState({
     country: "",
     phone: "",
@@ -38,7 +37,6 @@ const AddressPopUp = ({ isOpen, onClose, productId, quantity }: AddressPopUpProp
   });
   const [loading, setLoading] = useState(false);
 
-  const router = useRouter();
   const { toast } = useToast();
 
   const onChangeHandler = (
@@ -58,29 +56,14 @@ const AddressPopUp = ({ isOpen, onClose, productId, quantity }: AddressPopUpProp
     }));
   };
 
-  const handlePlaceOrder = async (e: React.FormEvent<HTMLFormElement>) => {
+  const addAddressHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     const addressString = JSON.stringify(address);
-    try {
-      const result = await placeOrder({
-        location: addressString,
-        products: [productId],
-        quantity: { [productId]: quantity[productId] || 1 }
-      });
-      console.log(result);
-      if (!result.success) {
-        toast({
-          title: "Failed to process",
-        });
-        return;
-      }
 
-      toast({
-        title: result.message,
-        description: "Your order got confirmed",
-      });
+    paymentAddress(addressString)
+    popUpVisible(true);
 
       setAddress({
         country: "",
@@ -90,24 +73,19 @@ const AddressPopUp = ({ isOpen, onClose, productId, quantity }: AddressPopUpProp
         street: "",
         landmark: "",
       });
-      onClose();
-      router.push("/user/orders");
-    } catch (error) {
-      console.log(error.message);
       toast({
-        title: "Failed to place order",
-        description: "Process failed",
+        title: "Address added successfully",
+        duration:"2000"
       });
-    } finally {
+      onClose();
       setLoading(false);
-    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogTitle>Enter Address</DialogTitle>
-        <form className="flex flex-col gap-4" onSubmit={handlePlaceOrder}>
+        <form className="flex flex-col gap-4" onSubmit={addAddressHandler}>
           <div>
             <label htmlFor="country" className="block text-sm font-medium">Country</label>
             <Select
@@ -192,7 +170,7 @@ const AddressPopUp = ({ isOpen, onClose, productId, quantity }: AddressPopUpProp
             className={`mt-4 ${loading && "cursor-not-allowed"}`}
             disabled={loading}
           >
-            {loading ? "Placing your order..." : "Place Order"}
+            {loading ? <Loader className="animate-spin"/> : "Add Address"}
           </Button>
         </form>
       </DialogContent>

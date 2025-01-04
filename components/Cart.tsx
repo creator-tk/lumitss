@@ -2,15 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { getProducts, placeOrder } from "@/lib/actions/product.action";
+import { getProducts } from "@/lib/actions/product.action";
 import { ActionButton } from "@/components/ActionButton";
 import { getCurrentUser } from "@/lib/actions/user.action";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
-import { useRouter } from "next/navigation";
 import { Loader2Icon, OctagonMinus, PlusCircleIcon } from "lucide-react";
 import AddressPopUp from "./AddressPopUp";
 import Loading from "./Loader";
+import Payment from "./Payment";
+
 
 
 interface Address {
@@ -24,8 +25,15 @@ const Cart: React.FC = () => {
   const [pageLoading, setPageLoading] = useState<boolean>(false);
   const [quantity, setQuantity] = useState<Record<string, number>>({});
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({});
+  const [orderDetails, setOrderDetails] = useState({
+    location: "",
+    products: [],
+    quantity: {},
+    price: 0,
+  })
+  const [paymentPopuVisible, setPaymentPopUpVisible] = useState<boolean>(false);
+  const [address, setAddress] = useState<string>();
 
-  const router = useRouter();
   const { toast } = useToast();
 
   const updateQuantity = (productId: string, updatedQuantity: number) => {
@@ -37,7 +45,6 @@ const Cart: React.FC = () => {
       setPageLoading(true);
       try {
         const products = await getProducts("cart");
-        console.log("Fetched Cart Products:", products);
 
         if (!products || products.length === 0) {
           setCartProducts([]);
@@ -55,7 +62,7 @@ const Cart: React.FC = () => {
     getCartProducts();
   }, []);
 
-  const handleOrderClick = async (productId: string) => {
+  const handleOrderClick = async (productId: string, price:number) => {
     setActionLoading((prev) => ({ ...prev, [productId]: true }));
     try {
       const currentUser = await getCurrentUser();
@@ -67,24 +74,18 @@ const Cart: React.FC = () => {
       if (currentUser.address) {
         currentUserAddress = JSON.parse(currentUser.address) as Address;
       }
-
+        setOrderDetails({
+          location: currentUserAddress?.location || address || "",
+          products: [productId],
+          quantity: { [productId]: quantity[productId] || 1 },
+          price: price,
+        });
       if (!currentUserAddress) {
         setSelectedProductId(productId);
         setOrderPopUpVisible(true);
         return;
-      } else {
-        await placeOrder({
-          location: currentUserAddress.location,
-          products: [productId],
-          quantity: { [productId]: quantity[productId] || 1 },
-        });
-
-        toast({
-          title: "Order Placed Successfully",
-          description: "Your order has been placed successfully.",
-        });
-
-        router.push("/user/orders");
+      }else{
+        setPaymentPopUpVisible(true);
       }
     } catch (error: unknown) {
       console.error("Error handling order:", (error as Error).message);
@@ -99,77 +100,87 @@ const Cart: React.FC = () => {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-8">Your Cart</h1>
-      {pageLoading ? (
-        <Loading/>
-      ) : cartProducts.length > 0 ? (
-        cartProducts.map((product) => (
-          <div key={product.$id} className="mb-8">
-            <div
-              className="grid grid-cols-5 gap-2"
-            >
-              <Image
-                src={product.image}
-                alt="product"
-                width={200}
-                height={200}
-                unoptimized={true}
-                className="rounded-lg w-[100px] col-span-2 h-[100px]"
-              />
-              <div className="col-span-3">
-                <div>
-                  <p className="text-sm font-bold">{product.productName}</p>
-                  <p>Rs: {product.price}/- <span className="line-through text-gray-500">Rs{product.price*1.5}</span></p>
-                </div>
-                <div className="bordered flex p-2 !rounded-full justify-between w-[200px]">
-                  <OctagonMinus
-                    onClick={() =>
-                      updateQuantity(product.$id, (quantity[product.$id] || 1) - 1)
-                    }
-                    className="cursor-pointer"
-                  />
-                  <p>{quantity[product.$id] || 1}</p>
-                  <PlusCircleIcon
-                    onClick={() => {
-                      updateQuantity(product.$id, (quantity[product.$id] || 1) + 1);
-                    }}
-                    className="cursor-pointer"
-                  />
+    <>
+      <div>
+        <h1 className="text-2xl font-bold mb-8">Your Cart</h1>
+        {pageLoading ? (
+          <Loading/>
+        ) : cartProducts.length > 0 ? (
+          cartProducts.map((product) => (
+            <div key={product.$id} className="mb-8">
+              <div
+                className="grid grid-cols-5 gap-2"
+              >
+                <Image
+                  src={product.image}
+                  alt="product"
+                  width={200}
+                  height={200}
+                  unoptimized={true}
+                  className="rounded-lg w-[100px] col-span-2 h-[100px]"
+                />
+                <div className="col-span-3">
+                  <div>
+                    <p className="text-sm font-bold">{product.productName}</p>
+                    <p>Rs: {product.price}/- <span className="line-through text-gray-500">Rs{product.price*1.5}</span></p>
+                  </div>
+                  <div className="bordered flex p-2 !rounded-full justify-between w-[200px]">
+                    <OctagonMinus
+                      onClick={() =>
+                        updateQuantity(product.$id, (quantity[product.$id] || 1) - 1)
+                      }
+                      className="cursor-pointer"
+                    />
+                    <p>{quantity[product.$id] || 1}</p>
+                    <PlusCircleIcon
+                      onClick={() => {
+                        updateQuantity(product.$id, (quantity[product.$id] || 1) + 1);
+                      }}
+                      className="cursor-pointer"
+                    />
+                  </div>
                 </div>
               </div>
+              <div className="w-[100%] flex gap-2 my-2  ">
+                <ActionButton
+                  action="remove"
+                  id={product.$id}
+                  style="bg-transparent text-black border border-gray-500 hover:bg-black hover:text-white py-2 px-4 rounded !text-sm w-[150px]"
+                />
+                <Button
+                  onClick={() => handleOrderClick(product.$id, product.price)}
+                  disabled={actionLoading[product.$id]}
+                  className={`bg-blue-600 text-white hover:bg-blue-700 py-2 px-4 rounded text-sm !w-[150px]${
+                    actionLoading[product.$id] ? "cursor-not-allowed" : ""
+                  }`}
+                >
+                  {actionLoading[product.$id] ? <Loader2Icon className="animate-spin text-white"/> : "Proceed to Buy"}
+                </Button>
+              </div>
             </div>
-            <div className="w-[100%] flex gap-2 my-2  ">
-              <ActionButton
-                action="remove"
-                id={product.$id}
-                style="bg-transparent text-black border border-gray-500 hover:bg-black hover:text-white py-2 px-4 rounded !text-sm w-[150px]"
-              />
-              <Button
-                onClick={() => handleOrderClick(product.$id)}
-                disabled={actionLoading[product.$id]}
-                className={`bg-blue-600 text-white hover:bg-blue-700 py-2 px-4 rounded text-sm !w-[150px]${
-                  actionLoading[product.$id] ? "cursor-not-allowed" : ""
-                }`}
-              >
-                {actionLoading[product.$id] ? <Loader2Icon className="animate-spin text-white"/> : "Order"}
-              </Button>
-            </div>
-          </div>
-        ))
-      ) : (
-        <p className="text-center text-gray-400 text-[2.5vw]">No products in cart</p>
-      )}
+          ))
+        ) : (
+          <p className="text-center text-gray-400 text-[2.5vw]">No products in cart</p>
+        )}
 
-      {isOrderPopUpVisible && selectedProductId && (
-        <AddressPopUp
-          isOpen={isOrderPopUpVisible}
-          onClose={() => setOrderPopUpVisible(false)}
-          productId={selectedProductId}
-          quantity={{ [selectedProductId]: quantity[selectedProductId] || 1 }}
+        {isOrderPopUpVisible && selectedProductId && (
+          <AddressPopUp
+            isOpen={isOrderPopUpVisible}
+            onClose={() => setOrderPopUpVisible(false)}
+            popUpVisible={() => setPaymentPopUpVisible(true)} 
+            paymentAddress={(addressString) => setAddress(addressString)} 
+          />
+        )}
+      </div>
+
+      {/**Payment Popup */}
+      {paymentPopuVisible && (
+        <Payment
+          orderDetails={orderDetails}
+          address={address || ""}
         />
       )}
-    </div>
+    </>
   );
 };
 

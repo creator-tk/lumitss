@@ -38,7 +38,7 @@ const Profile = async () => {
           action="logout"
           style="!w-auto bg-white bordered text-black hover:text-white mr-1"
         />
-        <ActionButton action="update" id={currentUser.$id} style="!w-auto" />
+        <ActionButton action="update" id={currentUser.$id} style="!w-auto"/>
       </div>
     </div>
   );

@@ -33,46 +33,58 @@ export const fetchUserDetails = async ()=>{
   }
 }
 
-const orders = [];
-
-export const fetchAllUsers = async ()=>{
+export const fetchAllUsers = async () => {
   try {
     const result = await getAllUsers();
-    result.map(eachUser => {
-      const parsedOrders = JSON.parse(eachUser.orders);
-      orders.push(...parsedOrders);
-    })
-
-    return result;
+    const parsedOrders = result.flatMap((user) => {
+      const userOrders = JSON.parse(user.orders).map(order => ({
+        ...order,
+        userId: user.$id,
+        userName: user.fullName,
+        address: JSON.parse(user.address),
+      }));
+      return userOrders;
+    });
+    return { users: result, orders: parsedOrders };
   } catch (error) {
-    console.log("Error occured while fetching all  users:",error.message)
+    console.error("Error occurred while fetching all users:", error.message);
+    return { users: [], orders: [] };
   }
-}
+};
 
-export const fetchOrders = async (date) => {
+
+export const fetchOrders = async (date = "") => {
+  const { orders } = await fetchAllUsers(); 
 
   if (!orders || orders.length === 0) {
-    return "No Orders Yet!";
+    return [];
   }
 
-  const filteredOrders = orders.filter(order => {
-    const parsedDate = order.orderDate.split("T")[0];
-    return date === "" || parsedDate === date; 
+  const formattedDate = date ? new Date(date).toISOString().split("T")[0] : new Date().toISOString().split("T")[0];
+
+  const filteredOrders = orders.filter((order) => {
+    const orderDate = order.orderDate.split("T")[0];
+    return !formattedDate || orderDate === formattedDate;
   });
 
-
   if (filteredOrders.length === 0) {
-    return "No matching orders for the selected date.";
+    return [];
   }
 
   const allProducts = await getAllProducts();
-  let resultedOrders;
-  filteredOrders.map(eachOrder => {
-    resultedOrders = allProducts.filter(eachProduct => {
-      return eachProduct.$id === eachOrder.productId
-    })
-  })
 
+  const enrichedOrders = filteredOrders.map((order) => {
+    const productDetails = allProducts.find(
+      (product) => product.$id === order.productId
+    );
 
-  return resultedOrders
+    return {
+      ...order,
+      productName: productDetails?.productName || "Unknown Product",
+      quantity: order.quantity,
+    };
+  });
+
+  return enrichedOrders;
 };
+

@@ -27,6 +27,7 @@ declare interface PlaceOrderProps {
   location?: string | object;
   products: string[];
   quantity?: object;
+  price: number;
 }
 
 declare interface User {

@@ -61,7 +61,7 @@ const ViewProduct: React.FC<ViewProductProps> = async ({ productId }) => {
             <Star className="fill-black"/>
           </div>
           {/* Action Button */}
-          <ActionButton action="cart" />
+          <ActionButton action="cart" id={product?.$id} />
 
           <div className="!border-red-500 rounded-xl bordered my-12 h-[200px] p-8">
             <h1 className="mb-4 text-center font-mono text-3xl ">LIMITED TIME SALE</h1>

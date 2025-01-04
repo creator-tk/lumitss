@@ -4,7 +4,7 @@ import { getAllProducts } from '@/lib/actions/product.action';
 import { CircleArrowUpIcon, CirclePlus } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import AddProduct from './AddProduct';
+import ProductHandler from './ProductsHandler';
 import { Button } from './ui/button';
 import { fetchUserDetails } from '@/lib/serverAction';
 import Loading from './Loader';
@@ -98,12 +98,13 @@ const Admin_Products: React.FC = () => {
           ))}
       </div>
 
-      <AddProduct
+      <ProductHandler
         Open={showAddProduct}
         onClose={() => setShowAddProduct(false)}
         field={currentProduct ? 'Update' : 'Add'}
         productId={currentProduct?.$id || ''}
         setCount={setProductCount}
+        productData={currentProduct}
       />
     </div>
   );
