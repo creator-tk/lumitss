@@ -52,6 +52,7 @@ const Payment = ({ orderDetails, address }: PaymentProps) => {
             })
               .then((res) => res.json())
               .then((data) => {
+                console.log("This data from payment.tsx:", data);
                 if (data.success) {
                   alert('Payment Verified! Your order is confirmed.');
                 } else {

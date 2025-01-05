@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { House, Package, Shield, ShoppingCart } from "lucide-react";
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/actions/user.action";
-import { getServerCookie } from "@/lib/serverAction";
+import { getCurrentUser } from "../lib/actions/user.action";
+import { getServerCookie } from "../lib/serverAction";
 
 type User = {
   fullName: string;
