@@ -1,7 +1,7 @@
-import { initializePayment } from "../appwrite";
-import { NextApiRequest, NextApiResponse } from "next";
+import { initializePayment } from "@/lib/appwrite";
+// import { NextApiRequest, NextApiResponse } from "next";
 
-export const handlePayment = async (req : NextApiRequest, res:NextApiResponse)=>{
+export const handlePayment = async (req , res)=>{
   try {
     if(req.method === "POST"){
       const {amount, currency} = req.body;
