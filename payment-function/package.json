@@ -4,12 +4,12 @@
   "main": "main.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node main.js"
   },
   "author": "",
   "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "razorpay": "^2.9.5"
-  }
+"description": "Appwrite function for payment processing",
+"dependencies": {
+  "razorpay": "^2.9.5"
+}
 }
