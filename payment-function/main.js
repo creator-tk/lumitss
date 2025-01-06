@@ -18,6 +18,10 @@ export default async function main({ req, res, log }) {
   const currency = req.query.currency;
   const amount = req.query.amount;
 
+  log("Query:", req.query)
+  log("Currency: ", currency);
+  log("Currency: ", amount);
+
   if (!currency || !amount) {
     return res.json({
       error: "Currency and amount are required",
