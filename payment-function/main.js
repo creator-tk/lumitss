@@ -28,7 +28,10 @@ export default async function main({ req, res, log }) {
   try {
     // Attempt to create an order
     const order = await razorpay.orders.create(options);
-
+    
+    if(!order){
+      return res.json({message: "Something unexpected happend!", status: "failded"})
+    }
     return res.json({
       message: "Order created successfully!",
       order,
