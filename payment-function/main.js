@@ -1,5 +1,4 @@
 import Razorpay from "razorpay";
-require('dotenv').config();  // Load environment variables
 
 export default async function main({ req, res, log }) {
   log("Function triggered!");
