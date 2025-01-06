@@ -11,7 +11,7 @@ export default async function main({req, res, log}) {
   });
 
   log("Entire Request", req);
-  return res.test("I tried my best this was not working");
+  return res.send("I tried my best this was not working");
 
 
   if (!amount) {
