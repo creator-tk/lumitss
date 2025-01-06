@@ -9,7 +9,8 @@ export default async function main({req, res, log}) {
     key_secret: process.env.RAZORPAY_KEY_SECRET,
   });
 
-  const {amount} = req.bodyJson;
+  log("Entire Request", req);
+  return res.test("I tried my best this was not working");
 
 
   if (!amount) {
