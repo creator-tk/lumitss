@@ -9,9 +9,7 @@ export default async function main({ req, res, log }) {
   });
 
   // Parse body for x-www-form-urlencoded
-  log(res.json(typeof req.body));
-  let request = req.body
-  const { currency = "INR", amount } = request;
+  const { currency = "INR", amount } = req.body;
 
   if (!currency || !amount) {
     return res.json({
