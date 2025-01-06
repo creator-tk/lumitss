@@ -1,7 +1,7 @@
 import Razorpay from "razorpay";
 
-export default async function main({ req, res, log }) {
-  log("Headers:", JSON.stringify(req.headers));
+export default async function main(context) {
+  context.log("Headers:", JSON.stringify(req.headers));
 
   const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
@@ -10,20 +10,20 @@ export default async function main({ req, res, log }) {
 
   // const payload = JSON.parse(req.body);
   // log("Parsed Payload", payload);
-  log("request Body: ", context.req.body); 
-  return res.send(context.req.body);
+  context.log("request Body: ", context.req.body); 
+  return context.res.send(context.req.body);
 
   // const currency = req.query.currency;
   // const amount = req.query.amount;
 
   // const {currency} = payload;
 
-  log("Query:", req.query)
+  log("Query:", context.req.query)
   log("Currency: ", currency);
   log("Currency: ", amount);
 
   if (!currency || !amount) {
-    return res.json({
+    return context.res.json({
       error: "Currency and amount are required",
     });
   }
@@ -38,18 +38,18 @@ export default async function main({ req, res, log }) {
     const order = await razorpay.orders.create(options);
 
     if (!order) {
-      return res.json({
+      return context.res.json({
         message: "Something unexpected happened!",
         status: "failed",
       });
     }
-    return res.json({
+    return context.res.json({
       message: "Order created successfully!",
       order,
     });
   } catch (error) {
-    log("Error creating Razorpay order:", error);
-    return res.json({
+    context.log("Error creating Razorpay order:", error);
+    return context.res.json({
       error: "Failed to create order with Razorpay",
     });
   }
