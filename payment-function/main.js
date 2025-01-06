@@ -9,7 +9,7 @@ export default async function main({ req, res, log }) {
   });
 
   const body = JSON.parse(req.body || "{}");
-  const { currency, amount } = body;
+  const { currency="INR", amount=100 } = body;
 
   log("requestBody:", req.body);
   log("Body:",body);
