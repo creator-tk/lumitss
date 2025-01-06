@@ -10,7 +10,7 @@ export default async function main(context) {
 
   // const payload = JSON.parse(req.body);
   // log("Parsed Payload", payload);
-  context.log("request Body: ", context.req.body, "payload", req.payload); 
+  context.log("request Body: ", context.req.body, "payload", context.req.payload); 
   return context.res.send(context.req.body);
 
   // const currency = req.query.currency;
