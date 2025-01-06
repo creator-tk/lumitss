@@ -12,10 +12,8 @@ export default async function main({ req, res, log }) {
     key_secret:"05xtdn20ftv8ANiAEK5gEYHf",
   });
 
-    const body = JSON.parse(req.body || "{}");
-  const { currency = "INR", amount } = body;
+  const { currency = "INR", amount } = req.body;
 
-  log("parsedBody:", body)
   log("requestBody:", req.body);
   log("currency:", currency, "Amount:", amount);
 
