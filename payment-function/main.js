@@ -3,7 +3,7 @@ export default async function main({ req, res, log }) {
   log("Function triggered!");
 
   const { currency, amount } = req.body;
-
+  log("currency:" , currency, "amount" , amount);
   // Validate if required data exists
   if (!currency || !amount) {
     return res.json({
