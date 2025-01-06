@@ -12,7 +12,7 @@ export default async function main({ req, res, log }) {
     key_secret:"05xtdn20ftv8ANiAEK5gEYHf",
   });
 
-  const { currency = "INR", amount = 100 } = req.body;
+  const { currency = "INR", amount } = req.body;
 
   log("requestBody:", req.body);
   log("currency:", currency, "Amount:", amount);
