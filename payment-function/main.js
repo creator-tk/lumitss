@@ -8,15 +8,15 @@ export default async function main({ req, res, log }) {
     key_secret: process.env.RAZORPAY_KEY_SECRET,
   });
 
-  // // Ensure the request is parsed correctly if JSON
-  // if (req.headers["content-type"] === "application/json" && typeof req.body === 'string') {
-  //   req.body = JSON.parse(req.body); // Parse JSON string if it's not automatically parsed
-  // }
+  // const payload = JSON.parse(req.body);
+  // log("Parsed Payload", payload);
+  log("request Body: ", req.body); 
+  return;
 
-  // const { currency = "INR", amount } = req.body;
+  // const currency = req.query.currency;
+  // const amount = req.query.amount;
 
-  const currency = req.query.currency;
-  const amount = req.query.amount;
+  // const {currency} = payload;
 
   log("Query:", req.query)
   log("Currency: ", currency);
