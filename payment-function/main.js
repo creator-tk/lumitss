@@ -9,21 +9,7 @@ export default async function main({ req, res, log }) {
   });
 
   // Parse body for x-www-form-urlencoded
-  let request;
-  if (req.headers["content-type"] === "application/x-www-form-urlencoded") {
-    const body = new URLSearchParams(req.body);
-    request = Object.fromEntries(body);
-  } else if (typeof req.body === "string" && req.body.trim() !== "") {
-    request = JSON.parse(req.body); // Parse JSON string
-  } else if (typeof req.body === "object" && req.body !== null) {
-    request = req.body; // Already parsed
-  } else {
-    return res.json({
-      error: "Request body is empty or invalid",
-    });
-  }
-
-  log("Parsed request:", request);
+  return res.json(typeof req.body);
 
   const { currency = "INR", amount } = request;
 
