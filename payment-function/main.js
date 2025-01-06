@@ -17,6 +17,7 @@ export default async function main({ req, res, log }) {
   const { currency = "INR", amount } = request;
   log("requestBody:", req.body);
   log("currency:", currency, "Amount:", amount);
+log("Headers:", JSON.stringify(req.headers));
 
   if (!currency || !amount) {
     return res.json({
