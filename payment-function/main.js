@@ -1,8 +1,8 @@
 import Razorpay from "razorpay";
 
 export default async function main({ req, res, log }) {
-  log("Function triggered!");
-
+  log("Headers:", JSON.stringify(req.headers));
+  log("Raw body:", JSON.stringify(req.body));
   const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET,
