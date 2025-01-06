@@ -9,7 +9,7 @@ export default async function main({ req, res, log }) {
   });
 
   let request;
-  if(typeof req.body === 'string'){
+  if(typeof req.body === 'string' && req.body.trim() !== ""){
     request = JSON.parse(req.body);
   }else{
     request = req.body;
