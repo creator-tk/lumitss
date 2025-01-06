@@ -1,21 +1,23 @@
 import Razorpay from "razorpay";
+require('dotenv').config();  // Load environment variables
 
 export default async function main({ req, res, log }) {
   log("Function triggered!");
-  log(process.env.RAZORPAY_KEY_ID)
-  log(process.env.RAZORPAY_KEY_SECRET)
+
+  // Log API keys (DO NOT log your secret key in production)
+  log("Razorpay Key ID:", process.env.RAZORPAY_KEY_ID);
+  log("Razorpay Key Secret:", process.env.RAZORPAY_KEY_SECRET);
 
   const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
+    key_id:"rzp_test_DCEhb7USpZ3Chq",
+    key_secret:"05xtdn20ftv8ANiAEK5gEYHf",
   });
 
-  const { currency = "INR", amount = 100 } = req.body;  // Directly using req.body
+  const { currency = "INR", amount = 100 } = req.body;
 
   log("requestBody:", req.body);
   log("currency:", currency, "Amount:", amount);
 
-  // Input validation
   if (!currency || !amount) {
     return res.json({
       error: "Currency and amount are required",
@@ -25,14 +27,13 @@ export default async function main({ req, res, log }) {
   const options = {
     amount: amount * 100,  // Razorpay expects the amount in paise
     currency,
-    receipt: `receipt_${Date.now()}`
+    receipt: `receipt_${Date.now()}`,
   };
 
   try {
     // Attempt to create an order
     const order = await razorpay.orders.create(options);
 
-    // Send the order details as a response
     return res.json({
       message: "Order created successfully!",
       order,
