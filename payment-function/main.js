@@ -13,24 +13,22 @@ export default async function main(context) {
   context.log("request Body: ", context.req.body, "payload", context.req.payload); 
   return context.res.send(context.req.body);
 
-  // const currency = req.query.currency;
-  // const amount = req.query.amount;
+  const {amount} = context.req.bodyJson;
 
   // const {currency} = payload;
 
   log("Query:", context.req.query)
-  log("Currency: ", currency);
   log("Currency: ", amount);
 
-  if (!currency || !amount) {
+  if (!amount) {
     return context.res.json({
-      error: "Currency and amount are required",
+      error: "amount is required",
     });
   }
 
   const options = {
     amount: amount * 100, // Razorpay expects the amount in paise
-    currency,
+    currency: "INR",
     receipt: `receipt_${Date.now()}`,
   };
 
