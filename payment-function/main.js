@@ -11,6 +11,8 @@ export default async function main({ req, res, log }) {
   const body = JSON.parse(req.body || "{}");
   const { currency, amount } = body;
 
+  log("currency:" , currency, "Ammount":amount);
+
   if (!currency || !amount) {
     return res.json({
       error: "Currency and amount are required",
