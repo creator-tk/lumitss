@@ -2,17 +2,6 @@ import Razorpay from "razorpay";
 
 export default async function main({ req, res, log }) {
   log("Headers:", JSON.stringify(req.headers));
-  log("Raw body:", JSON.stringify(req.body));
-
-  // CORS headers to allow all origins (can replace * with specific domains)
-  res.setHeader('Access-Control-Allow-Origin', '*');  // Or specify the allowed origin (e.g. 'http://example.com')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');  // Add other methods if necessary
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');  // Specify required headers
-
-  // Handle preflight requests for OPTIONS
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
 
   const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
