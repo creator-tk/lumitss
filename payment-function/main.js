@@ -8,13 +8,12 @@ export default async function main({ req, res, log }) {
     key_secret: process.env.RAZORPAY_KEY_SECRET
   });
 
-  const body = JSON.parse(req.body || "{}");
-  const { currency="INR", amount=100 } = body;
+  const { currency = "INR", amount = 100 } = req.body;  // Directly using req.body
 
   log("requestBody:", req.body);
-  log("Body:",body);
-  log("currency:" , currency, "Ammount:", amount);
+  log("currency:", currency, "Amount:", amount);
 
+  // Input validation
   if (!currency || !amount) {
     return res.json({
       error: "Currency and amount are required",
@@ -22,17 +21,25 @@ export default async function main({ req, res, log }) {
   }
 
   const options = {
-    amount: amount*100,
-    currency: currency || "INR",
+    amount: amount * 100,  // Razorpay expects the amount in paise
+    currency,
     receipt: `receipt_${Date.now()}`
+  };
+
+  try {
+    // Attempt to create an order
+    const order = await razorpay.orders.create(options);
+
+    // Send the order details as a response
+    return res.json({
+      message: "Order created successfully!",
+      order,
+    });
+  } catch (error) {
+    // Handle any errors from Razorpay API
+    log("Error creating Razorpay order:", error);
+    return res.status(500).json({
+      error: "Failed to create order with Razorpay",
+    });
   }
-
-  const order = await razorpay.orders.create(options);
-  res.send(order);
-  return res.json({
-    message: "Function executed successfully!",
-    Currency: currency,
-    Amount: amount,
-  });
 }
-
