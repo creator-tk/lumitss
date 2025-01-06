@@ -38,7 +38,7 @@ export default async function main({ req, res, log }) {
   } catch (error) {
     // Handle any errors from Razorpay API
     log("Error creating Razorpay order:", error);
-    return res.status(500).json({
+    return res.json({
       error: "Failed to create order with Razorpay",
     });
   }
