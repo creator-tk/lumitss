@@ -8,8 +8,13 @@ export default async function main({ req, res, log }) {
     key_secret:process.env.RAZORPAY_KEY_SECRET,
   });
 
-  const { currency = "INR", amount } = req.body;
-
+  let request;
+  if(typeof req.body === 'string'){
+    request = JSON.parse(req.body);
+  }else{
+    request = req.body;
+  }
+  const { currency = "INR", amount } = request;
   log("requestBody:", req.body);
   log("currency:", currency, "Amount:", amount);
 
