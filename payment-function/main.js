@@ -15,7 +15,7 @@ export default async function main({ req, res, log }) {
     const body = JSON.parse(req.body || "{}");
   const { currency = "INR", amount } = body;
 
-  log("parsedBody": body)
+  log("parsedBody:", body)
   log("requestBody:", req.body);
   log("currency:", currency, "Amount:", amount);
 
