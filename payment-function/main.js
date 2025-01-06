@@ -1,7 +1,7 @@
 import Razorpay from "razorpay";
 
 export default async function main(context) {
-  context.log("Headers:", JSON.stringify(req.headers));
+  context.log("Headers:", JSON.stringify(context.req.headers));
 
   const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
