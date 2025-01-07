@@ -34,7 +34,7 @@ export const initializePayment = async (amount:number, currency:string) => {
 };
 
 
-export const verifyPayment = async (responseObject, orderDetails, address:string) => {
+export const verifyPayment = async (responseObject:paymentResponseProps, orderDetails:PlaceOrderProps, address:string) => {
   try {
     // console.log("OrderDetails from verifyPayment",orderDetails);
     // console.log("RazorpayObject", responseObject);
