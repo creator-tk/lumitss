@@ -11,6 +11,7 @@ import { Loader2Icon, OctagonMinus, PlusCircleIcon } from "lucide-react";
 import AddressPopUp from "./AddressPopUp";
 import Loading from "./Loader";
 import Payment from "./Payment";
+import { initializePayment } from "@/lib/actions/payment.action";
 
 
 
@@ -30,6 +31,7 @@ const Cart: React.FC = () => {
     products: [],
     quantity: {},
     price: 0,
+    orderId: ""
   })
   const [paymentPopuVisible, setPaymentPopUpVisible] = useState<boolean>(false);
   const [address, setAddress] = useState<string>();
@@ -74,17 +76,28 @@ const Cart: React.FC = () => {
       if (currentUser.address) {
         currentUserAddress = JSON.parse(currentUser.address) as Address;
       }
+
+      try {
+        const order = await initializePayment(price, "INR");
         setOrderDetails({
-          location: currentUserAddress?.location || address || "",
+          location: currentUserAddress?.location || address || {},
           products: [productId],
           quantity: { [productId]: quantity[productId] || 1 },
           price: price,
+          orderId: order.id
         });
+      } catch (error) {
+        console.log("Error:", error.message);
+        toast({
+          title:"Something went wrong try after some time"
+        })
+      }
+
       if (!currentUserAddress) {
         setSelectedProductId(productId);
         setOrderPopUpVisible(true);
         return;
-      }else{
+      }else{    
         setPaymentPopUpVisible(true);
       }
     } catch (error: unknown) {
@@ -177,7 +190,8 @@ const Cart: React.FC = () => {
       {paymentPopuVisible && (
         <Payment
           orderDetails={orderDetails}
-          address={address || ""}
+          address={address || {}}
+          close={()=>setPaymentPopUpVisible(false)}
         />
       )}
     </>

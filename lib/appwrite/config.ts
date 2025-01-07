@@ -8,3 +8,8 @@ export const appWriteConfig = {
   secretKey: process.env.NEXT_APPWRITE_SECRET!,
   functionId: process.env.NEXT_PUBLIC_FUNCTION_ID!,
 }
+
+export const razorpayConfig = {
+  keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+  keySecret: process.env.NEXT_PUBLIC_RAZORPAY_KEY_SECRET!
+}

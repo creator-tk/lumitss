@@ -16,7 +16,6 @@ const Collections = ({category}) => {
 
   const [prevCount, setPrevCount] = useState(0)
   const [pageLimit, setPageLimit] = useState(12)
-  console.log(loading)
 
   useEffect(() => {
     const fetchData = async () => {

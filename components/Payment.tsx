@@ -7,13 +7,19 @@ interface PaymentProps {
     products: string[];
     quantity: Record<string, number>;
     price: number;
+    orderId: string;
   };
+  close: ()=>void;
 }
 
-import { appWriteConfig } from '@/lib/appwrite/config';
 import React, { useEffect } from 'react';
+import { verifyPayment } from '@/lib/actions/payment.action';
+import { useToast } from '@/hooks/use-toast';
 
-const Payment = ({ orderDetails, address }: PaymentProps) => {
+const Payment = ({ orderDetails, address, close }: PaymentProps) => {
+
+  const {toast} = useToast();
+
   useEffect(() => {
     const loadRazorpayScript = () => {
       return new Promise((resolve, reject) => {
@@ -33,41 +39,32 @@ const Payment = ({ orderDetails, address }: PaymentProps) => {
           amount: orderDetails.price * 100,
           currency: 'INR',
           name: 'LUMITSS',
-          description: 'Test Payment',
-          image: 'https://your-logo-url.com',
-          handler: function(response) {
-            const paymentId = response.razorpay_payment_id;
-            console.log("Payment successful. Payment ID: " + paymentId);
+          description: "Seamless Shopping Experience at LUMITSS – Your Trusted Online Store for Quality Products",
+          image: '/lumitss.png',
+          order_id: orderDetails.orderId,
+          handler: async function(response) {
+            close();
+            const responseObject = {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature
+            }
 
-            fetch(`${appWriteConfig.endpointUrl}/functions/${appWriteConfig.functionId}/executions`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-Appwrite-Project': appWriteConfig.projectId,
-              },
-              body: JSON.stringify({
-                paymentId,
-                orderDetails,
-              }),
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                console.log("This data from payment.tsx:", data);
-                if (data.success) {
-                  alert('Payment Verified! Your order is confirmed.');
-                } else {
-                  alert('Payment verification failed.');
-                }
-              })
-              .catch((error) => {
-                console.log('Error verifying payment:', error, "ErrorMessage:", error.message);
-                alert('An error occurred while verifying payment.');
+            const verificationResult = await verifyPayment(responseObject, orderDetails, address)
+            if(verificationResult.success){
+              toast({
+                title: "Payment Successfully"
               });
+              window.location.replace("/user/orders");
+              close();
+            }else{
+              alert("Verification Failded")
+              close();
+            }
           },
         };
 
         const rzp = new window.Razorpay(options);
-
         rzp.open();
       })
       .catch((error) => {
@@ -82,6 +79,7 @@ const Payment = ({ orderDetails, address }: PaymentProps) => {
         document.body.removeChild(script);
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderDetails, address]);
 
   return <div>Payment</div>;

@@ -5,7 +5,13 @@ import React from 'react';
 
 const Profile = async () => {
   const currentUser = await getCurrentUser();
-  const parsedAddress = JSON.parse(JSON.parse(currentUser?.address));
+  const parsedAddress = {};
+
+  if(currentUser.address){
+    parsedAddress = JSON.parse(JSON.parse(currentUser?.address));
+  }
+
+  console.log("UserId", currentUser.$id);
 
   if (!currentUser) {
     redirect('/signIn');
@@ -35,6 +41,7 @@ const Profile = async () => {
       </div>
       <div className="flex justify-end">
         <ActionButton
+          id={currentUser.$id}
           action="logout"
           style="!w-auto bg-white bordered text-black hover:text-white mr-1"
         />
