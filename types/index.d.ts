@@ -36,6 +36,12 @@ declare interface User {
   accountId: string;
 }
 
+declare interface paymentResponseProps{
+  razorpay_order_id:string;
+  razorpay_payment_id:string;
+  razorpay_signature:string;
+}
+
 // declare interface ActionResult {
 //   success: boolean;
 //   message: string;
