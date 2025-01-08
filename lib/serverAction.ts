@@ -42,6 +42,7 @@ export const fetchAllUsers = async () => {
         userId: user.$id,
         userName: user.fullName,
         address: JSON.parse(user.address),
+        userId: user.$id
       }));
       return userOrders;
     });

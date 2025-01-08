@@ -8,10 +8,13 @@ import { useToast } from "@/hooks/use-toast";
 import { CheckCircle2, Loader2 } from "lucide-react";
 
 interface OrderType {
+  userId: string;
   productId: string;
+  productName: string;
   orderDate: string;
   orderStatus: string;
   quantity: number;
+  address: string;
 }
 
 const AdminOrders = () => {
@@ -19,8 +22,7 @@ const AdminOrders = () => {
   const [date, setDate] = useState<string>("");
   const [pageLoading, setPageLoading] = useState<boolean>(true);
   const [statusLoading, setStatusLoading] = useState(false);
-  const {toast} = useToast();
-  const [status, setStatus] = useState<string>("confirmed"); 
+  const { toast } = useToast();
 
   const onChangeHandler = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setPageLoading(true);
@@ -31,21 +33,33 @@ const AdminOrders = () => {
     setPageLoading(false);
   };
 
-  const handleStatusChange = async (userId, productId, status) => {
+  const handleStatusChange = async (userId: string, productId: string, currentStatus: string) => {
     try {
-      setStatus(status);
       setStatusLoading(true);
-      await updateOrderStatus(userId, productId, status);
+
+      const newStatus = currentStatus === "confirmed" ? "Couriered" : "confirmed";  
+      await updateOrderStatus(userId, productId, newStatus);
+
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.productId === productId && order.userId === userId
+            ? { ...order, orderStatus: newStatus }
+            : order
+        )
+      );
 
       toast({
-        title:"Status Updated"
-      })
-      setStatusLoading(false)
+        title: "Status Updated",
+        description: `Order status updated to ${newStatus}`,
+      });
+      setStatusLoading(false);
     } catch (error) {
       toast({
-        title:"Some thing went wrong"
-      })
-      console.log(error.message)
+        title: "Something went wrong",
+        description: error.message,
+      });
+      console.error(error.message);
+      setStatusLoading(false);
     }
   };
 
@@ -59,11 +73,11 @@ const AdminOrders = () => {
         setOrders(todayOrders || []);
       }
 
-      setPageLoading(false)
+      setPageLoading(false);
     };
 
     fetchData();
-  }, [date, status]);
+  }, [date]);
 
   return (
     <div className="p-4">
@@ -95,20 +109,24 @@ const AdminOrders = () => {
               <li className="col-span-3">{eachOrder?.productName}</li>
               <li className="col-span-1">{eachOrder?.quantity}</li>
               <li className="col-span-1 font-bold">
-
                 <span className="text-green-600">
-                  {eachOrder?.orderStatus === "Couriered"? (
-                  <span>{eachOrder?.orderStatus}  <CheckCircle2 className="inline-block"/></span>  
-                  ): (<span className="text-orange-800">{eachOrder?.status}</span>)}
+                  {eachOrder?.orderStatus === "Couriered" ? (
+                    <span>
+                      {eachOrder?.orderStatus} <CheckCircle2 className="inline-block" />
+                    </span>
+                  ) : (
+                    <span className="text-orange-800">{eachOrder?.orderStatus}</span>
+                  )}
                 </span>
                 <div className="flex gap-2">
                   {!statusLoading ? (
                     <select
                       className={`px-4 py-2 rounded-lg text-xl font-semibold `}
-                      value={status}
-                      onChange={(e)=>handleStatusChange(eachOrder?.userId, eachOrder?.productId, e.target.value)}
+                      value={eachOrder?.orderStatus}
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                      onChange={(e) => handleStatusChange(eachOrder.userId, eachOrder.productId, eachOrder.orderStatus)}
                     >
-                      <option value=""></option>
+                      <option value="">Select Status</option>
                       <option value="confirmed" className="text-orange-600">
                         Order Confirmed
                       </option>
@@ -116,7 +134,9 @@ const AdminOrders = () => {
                         Order Couriered
                       </option>
                     </select>
-                  ): <Loader2 className="animate-spin"/>}
+                  ) : (
+                    <Loader2 className="animate-spin" />
+                  )}
                 </div>
               </li>
             </ul>
