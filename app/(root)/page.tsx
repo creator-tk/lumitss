@@ -35,7 +35,7 @@ export default async function Home() {
       {/**Products */}
       <div className="lg:px-[15%] px-[5%] text-3xl mb-12">
         <h1 className="my-8"><b>Trending Right Now</b></h1>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 ">
           {products.slice(0,4).map((eachProduct: Product) => (
             <div
               key={eachProduct.$id}
@@ -57,7 +57,7 @@ export default async function Home() {
                 </div>
               </Link>
               <div className="p-4">
-                <p className="text-lg font-semibold text-gray-800 hover:text-gray-600 truncate">
+                <p className="text-lg font-bold font-mono text-gray-800 hover:text-gray-600 truncate">
                   {eachProduct.productName}
                 </p>
                 <p className="text-gray-700 mt-2 mb-4">
@@ -132,7 +132,7 @@ export default async function Home() {
       {/**Animation */}
       <div className="lg:px-[15%] px-[5%] flex-center flex-col">
         <h1 className="text-center text-5xl my-8"><b>Limited Time!</b></h1>
-        <FlipCartAnimation text={["SALE ON ", new Date().toLocaleDateString()]}
+        <FlipCartAnimation text={[" SALE ON. ", new Date().toLocaleDateString()]}
         interval={3000} />
         <p className="text-center">Our limited time 50% off sale is ending in few days..</p>
       </div>

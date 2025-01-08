@@ -2,7 +2,7 @@ import React from 'react'
 import Cart from '@/components/Cart';
 import Profile from '@/components/Profile';
 import Orders from '@/components/Orders';
-import Payment from '@/components/Payment';
+import Processing from '@/components/Processing';
 
 const page = async ({params}:UserPageProps) => {
   const type = ((await params)?.type as string) || ""
@@ -18,8 +18,8 @@ const page = async ({params}:UserPageProps) => {
     case 'orders':
       content = <Orders/>
       break;
-    case 'payment':
-      content = <Payment/>
+    case "Processing":
+      content = <Processing/>
       break;
   }
   return (

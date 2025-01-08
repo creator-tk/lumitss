@@ -5,13 +5,13 @@ import React from 'react';
 
 const Profile = async () => {
   const currentUser = await getCurrentUser();
-  const parsedAddress = {};
+  let parsedAddress;
 
   if(currentUser.address){
     parsedAddress = JSON.parse(JSON.parse(currentUser?.address));
   }
 
-  console.log("UserId", currentUser.$id);
+
 
   if (!currentUser) {
     redirect('/signIn');

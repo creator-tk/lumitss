@@ -14,7 +14,7 @@ interface PaymentProps {
 
 import React, { useEffect } from 'react';
 import { verifyPayment } from '@/lib/actions/payment.action';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast'; 
 
 const Payment = ({ orderDetails, address, close }: PaymentProps) => {
 
@@ -43,6 +43,7 @@ const Payment = ({ orderDetails, address, close }: PaymentProps) => {
           image: '/lumitss.png',
           order_id: orderDetails.orderId,
           handler: async function(response) {
+            rzp.close();
             close();
             const responseObject = {
               razorpay_payment_id: response.razorpay_payment_id,
@@ -50,17 +51,19 @@ const Payment = ({ orderDetails, address, close }: PaymentProps) => {
               razorpay_signature: response.razorpay_signature
             }
 
+            window.location.href="/user/Processing?status=pending"
             const verificationResult = await verifyPayment(responseObject, orderDetails, address)
             if(verificationResult.success){
+              close();
               toast({
                 title: "Payment Successfully"
               });
-              window.location.replace("/user/orders");
-              close();
+              window.location.replace("/user/Processing?status=success");
             }else{
-              alert("Verification Failded")
               close();
+              window.location.replace("/user/Processing?status=failure");
             }
+            close();
           },
         };
 
@@ -82,7 +85,7 @@ const Payment = ({ orderDetails, address, close }: PaymentProps) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderDetails, address]);
 
-  return <div>Payment</div>;
+  return <div></div>;
 };
 
 export default Payment;
