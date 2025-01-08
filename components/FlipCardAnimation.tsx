@@ -8,26 +8,22 @@ const FlipCardAnimation = ({ text, interval = 3000 }) => {
   useEffect(() => {
     const updateText = () => {
       const randomText = text[Math.floor(Math.random() * text.length)];
-      const currentDate = new Date().toLocaleDateString(); // Get the current date
-  
-      // Function to format the date and replace '/' with '-'
+      const currentDate = new Date().toLocaleDateString(); 
+
       const formatDate = (date) => {
-        const parts = date.split('/'); // Split the date into [month, day, year]
+        const parts = date.split('/'); 
+
+        const formattedDate = parts.map(part => part.length === 1 ? `0${part}` : part); 
         
-        // Check if the day and month are single digits
-        const formattedDate = parts.map(part => part.length === 1 ? `0${part}` : part); // Ensure two digits
-        
-        // Replace '/' with '-'
         return formattedDate.join('-');
       };
   
-      // Check if randomText matches today's date
       if (randomText === currentDate) {
-        setDisplayedText(formatDate(currentDate)); // Format the date
+        setDisplayedText(formatDate(currentDate)); 
         return;
       }
   
-      setDisplayedText(randomText); // Use the randomText otherwise
+      setDisplayedText(randomText); 
     };
   
     const intervalId = setInterval(updateText, interval);
