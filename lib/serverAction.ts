@@ -38,14 +38,18 @@ export const fetchAllUsers = async () => {
   try {
     const result = await getAllUsers();
     const parsedOrders = result.flatMap((user) => {
-      const userOrders = JSON.parse(user.orders).map(order => ({
-        ...order,
-        userId: user.$id,
-        userName: user.fullName,
-        address: JSON.parse(user.address),
-        userId: user.$id
-      }));
-      return userOrders;
+      if(user.orders.trim() !== ""){
+        const userOrders = JSON.parse(user.orders).map(order => ({
+          ...order,
+          userId: user.$id,
+          userName: user.fullName,
+          address: user.address
+        }));
+        return userOrders;
+      }else{
+        return []
+      }
+
     });
     return { users: result, orders: parsedOrders };
   } catch (error) {
@@ -89,4 +93,3 @@ export const fetchOrders = async (date = "") => {
 
   return enrichedOrders;
 };
-
