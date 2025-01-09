@@ -23,44 +23,41 @@ import {
 import { addProduct, updateProductDetails } from '@/lib/actions/product.action';
 import { useToast } from '@/hooks/use-toast';
 
-interface AddProductProps {
+interface productHandlerProps {
   Open: boolean;
   onClose: () => void;
   productId?: string;
   field: string;
-  setCount: (value: number) => void;
+  setCount: React.Dispatch<React.SetStateAction<number>>;
   productData?: {
     productName?: string;
     price?: number;
     productDetails?: string;
     category?: string;
-    image?: File | null;
+    image?: File | string | null;
   };
 }
 
-const productSchema = z.object({
+interface ProductSchema {
+  productName?: string;
+  price?: number;
+  image?: File | string | null;
+  productDetails?: string;
+  category?: string;
+}
+
+const productSchema: z.ZodSchema<ProductSchema> = z.object({
   productName: z.string().nonempty("Product name is required"),
   price: z.coerce.number(),
-  image: z
-    .any()
-    .refine(
-      (file, ctx) => {
-        if (!file && !ctx.parent.productId) {
-          return false;
-        }
-        return true;
-      },
-      { message: "Image is required" }
-    )
-    .optional(),
+  image: z.any(),
   productDetails: z.string().optional(),
   category: z.string().optional(),
 });
 
-const ProductHandler: React.FC<AddProductProps> = ({ Open, onClose, productId, field, setCount, productData }) => {
+const ProductHandler = ({ Open, onClose, productId, field, setCount, productData }: productHandlerProps) => {
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [fieldRequired, setFieldRequired] = useState('');
+  const [fieldRequired, setFieldRequired] = useState(false);
 
   const { toast } = useToast();
 
@@ -132,7 +129,7 @@ const ProductHandler: React.FC<AddProductProps> = ({ Open, onClose, productId, f
           category: values?.category,
         });
 
-        setCount((prev) => prev + 1);
+        setCount((prev: number) => prev + 1);
         toast({
           title: "Product Added Successfully",
         });

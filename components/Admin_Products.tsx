@@ -12,7 +12,7 @@ import UploadImages from './UploadImages';
 
 const Admin_Products: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState([]);
   const [showAddProduct, setShowAddProduct] = useState<boolean>(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [productCount, setProductCount] = useState(0);

@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   images:{
     domains: ["i.etsystatic.com", "cloud.appwrite.io"]
   },
-  output: "export",
+  // output: "export",
 
 };
 

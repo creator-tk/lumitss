@@ -1,6 +1,7 @@
 "use server"
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
 import { getAllUsers, getCurrentUser } from "./actions/user.action";
 import { getAllProducts } from "./actions/product.action";
 
@@ -37,14 +38,18 @@ export const fetchAllUsers = async () => {
   try {
     const result = await getAllUsers();
     const parsedOrders = result.flatMap((user) => {
-      const userOrders = JSON.parse(user.orders).map(order => ({
-        ...order,
-        userId: user.$id,
-        userName: user.fullName,
-        address: JSON.parse(user.address),
-        userId: user.$id
-      }));
-      return userOrders;
+      if(user.orders.trim() !== ""){
+        const userOrders = JSON.parse(user.orders).map(order => ({
+          ...order,
+          userId: user.$id,
+          userName: user.fullName,
+          address: user.address
+        }));
+        return userOrders;
+      }else{
+        return []
+      }
+
     });
     return { users: result, orders: parsedOrders };
   } catch (error) {

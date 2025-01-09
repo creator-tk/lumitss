@@ -7,7 +7,6 @@ import { placeOrder } from "./product.action";
 
 export const initializePayment = async (amount:number, currency:string) => {
   try {   
-    console.log("RazorpayKeyId:", razorpayConfig.keyId, "Key Secret:", razorpayConfig.keySecret)
     const razorpay = new Razorpay({
       key_id : razorpayConfig.keyId,
       key_secret: razorpayConfig.keySecret
@@ -23,8 +22,6 @@ export const initializePayment = async (amount:number, currency:string) => {
 
     const order = await razorpay.orders.create(orderOptions);
 
-    console.log("Razorpay Order created:", order);
-
     return order;
 
   } catch (error) {
@@ -33,17 +30,12 @@ export const initializePayment = async (amount:number, currency:string) => {
   }
 };
 
-
-export const verifyPayment = async (responseObject:paymentResponseProps, orderDetails:PlaceOrderProps, address:string) => {
+export const verifyPayment = async (responseObject: paymentResponseProps, orderDetails: PlaceOrderProps, address: string) => {
   try {
-    // console.log("OrderDetails from verifyPayment",orderDetails);
-    // console.log("RazorpayObject", responseObject);
-    // console.log("Address from payment verification", address)
-
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = responseObject;
-    const {location, products, quantity, price} = orderDetails;
+    const { location, products, quantity, price } = orderDetails;
 
-
+    // Verify signature using HMAC
     const sha = crypto.createHmac("sha256", razorpayConfig.keySecret);
     sha.update(`${razorpay_order_id}|${razorpay_payment_id}`);
     const digest = sha.digest("hex");
@@ -55,18 +47,21 @@ export const verifyPayment = async (responseObject:paymentResponseProps, orderDe
       };
     }
 
+    // Handle address fallback if location is invalid
     let updatedAddress = location;
-    if (Object.keys(location).length === 0) {
+    if (!location || Object.keys(location).length === 0) {  // Check for null or empty object
       updatedAddress = address;
     }
 
-    const response = await placeOrder({location:updatedAddress, products, quantity, price})
+    // Proceed with placing the order
+    const response = await placeOrder({ location: updatedAddress, products, quantity, price });
 
-    if(response?.success){
+    if (response?.success) {
       console.log(response.message);
-    }else{
-      console.log("Something went wrong plz check the code once again")
+    } else {
+      console.log("Something went wrong, please check the code.");
     }
+
     return {
       success: true,
       message: "Payment was successful.",
@@ -79,3 +74,4 @@ export const verifyPayment = async (responseObject:paymentResponseProps, orderDe
     };
   }
 };
+
