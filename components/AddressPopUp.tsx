@@ -23,7 +23,7 @@ interface AddressPopUpProps {
   isOpen: boolean;
   onClose: () => void;
   popUpVisible: ()=>void;
-  paymentAddress: ()=>void;
+  paymentAddress: (address:string)=>void;
 }
 
 const AddressPopUp = ({ isOpen, onClose, popUpVisible, paymentAddress }: AddressPopUpProps) => {
@@ -63,7 +63,7 @@ const AddressPopUp = ({ isOpen, onClose, popUpVisible, paymentAddress }: Address
     const addressString = JSON.stringify(address);
 
     paymentAddress(addressString)
-    popUpVisible(true);
+    popUpVisible();
 
       setAddress({
         country: "",
@@ -75,7 +75,7 @@ const AddressPopUp = ({ isOpen, onClose, popUpVisible, paymentAddress }: Address
       });
       toast({
         title: "Address added successfully",
-        duration:"2000"
+        duration:2000
       });
       onClose();
       setLoading(false);

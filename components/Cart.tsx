@@ -16,7 +16,7 @@ import { initializePayment } from "@/lib/actions/payment.action";
 
 
 interface Address {
-  location: string;
+  location: string | object;
 }
 
 const Cart: React.FC = () => {
@@ -80,7 +80,7 @@ const Cart: React.FC = () => {
       try {
         const order = await initializePayment(price, "INR");
         setOrderDetails({
-          location: currentUserAddress?.location || address || {},
+          location: typeof currentUserAddress?.location === 'string' ? currentUserAddress.location : address,
           products: [productId],
           quantity: { [productId]: quantity[productId] || 1 },
           price: price,
@@ -190,7 +190,7 @@ const Cart: React.FC = () => {
       {paymentPopuVisible && (
         <Payment
           orderDetails={orderDetails}
-          address={address || {}}
+          address={address || ""}
           close={()=>setPaymentPopUpVisible(false)}
         />
       )}

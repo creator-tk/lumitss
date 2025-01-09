@@ -3,31 +3,30 @@ import { getProducts } from "@/lib/actions/product.action";
 import Image from "next/image";
 import { formateDateTime } from "@/lib/utils";
 
-type Product = {
-  $id: string;
-  image: string;
-  productName: string;
-  productDetails: string;
-  price: number;
-};
+// type Product = {
+//   $id: string;
+//   image: string;
+//   productName: string;
+//   productDetails: string;
+//   price: number;
+// };
 
-type OrderDetails = {
-  quantity?: number;
-  orderStatus: string;
-  orderDate: string;
-};
+// type OrderDetails = {
+//   quantity?: number;
+//   orderStatus: string;
+//   orderDate: string;
+// };
 
-type OrderedProducts = {
-  orderedItems: Product[];
-  orderDetails: OrderDetails[];
-};
 
 const Orders = async () => {
-  const orderedProducts: OrderedProducts | null = await getProducts("orders");
+  const orderedProducts = await getProducts("orders");
   
   if (!orderedProducts) return <p>No Orders yet</p>;
 
-  if (!orderedProducts?.length) return <p>No Orders</p>;
+  if (!orderedProducts || Object.entries(orderedProducts).length === 0) {
+    return <p>No Orders</p>;
+  }
+  
 
   return (
     <div>

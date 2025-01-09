@@ -6,6 +6,7 @@ import Loading from './Loader';
 import DisplayProducts from './DisplayProducts';
 import { StepBack, StepForward } from 'lucide-react';
 import { Button } from './ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const Collections = ({category}) => {
   const [resultedProducts, setResultedProducts] = useState([]);
@@ -16,6 +17,7 @@ const Collections = ({category}) => {
 
   const [prevCount, setPrevCount] = useState(0)
   const [pageLimit, setPageLimit] = useState(12)
+  const {toast} = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,7 +42,7 @@ const Collections = ({category}) => {
     };
   
     fetchData();
-  }, [category]);
+  }, [category, toast]);
   
 
   const clickHandler = (action) => {

@@ -9,6 +9,7 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 
 interface OrderType {
   userId: string;
+  userName:string;
   productId: string;
   productName: string;
   orderDate: string;

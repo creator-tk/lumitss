@@ -5,6 +5,15 @@ import { useRouter } from "next/navigation";
 import { verifyPayment } from "@/lib/actions/payment.action";
 import { useToast } from "@/hooks/use-toast";
 
+// Declare Razorpay on the window object
+declare global {
+  interface Window {
+    Razorpay: {
+      new (options: object): { open: () => void };
+    };
+  }
+}
+
 interface PaymentProps {
   address: string;
   orderDetails: {
@@ -59,9 +68,7 @@ const Payment = ({ orderDetails, address, close }: PaymentProps) => {
               window.location.replace("/user/orders");
             } else {
               alert("Payment verification failded.")
-            }
-
-            
+            }  
             close();
           },
           modal: {
@@ -76,7 +83,7 @@ const Payment = ({ orderDetails, address, close }: PaymentProps) => {
         rzp.open(); 
     
         return () => {
-          if (rzp) rzp.close();
+          // Cleanup code if needed
         };
       })
       .catch((error) => {

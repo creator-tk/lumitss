@@ -395,7 +395,7 @@ export const updateProductDetails = async (
     price?: number;
     productDetails?: string;
     category?: string;
-    image?: File | null;
+    image?: File | unknown | null;
   }
 ) => {
 
@@ -408,7 +408,7 @@ export const updateProductDetails = async (
       uploadedImage = await storage.updateFile(
         appWriteConfig.bucketId,
         productId, 
-        image
+        // image
       );
     }
 
@@ -431,7 +431,7 @@ export const updateProductDetails = async (
     );
 
     return result;
-  } catch (error: unknown) {
+  } catch (error) {
     handleError(error?.message || "Unknown error occurred", "Unable to update product.");
     throw error;
   }
@@ -443,7 +443,7 @@ export const uploadImages = async (imageId:string, image:File) => {
   let uploadedImage;
   try {
     if(image instanceof File){
-      const inputFile = InputFile.fromBuffer(image as unknow as Buffer, image.name);
+      const inputFile = InputFile.fromBuffer(image as unknown as Buffer, image.name);
 
       uploadedImage = await storage.createFile(
         appWriteConfig.bucketId,

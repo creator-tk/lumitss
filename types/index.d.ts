@@ -13,7 +13,7 @@ declare interface AddProductProps {
   price: number;
   productDetails?: string;
   category?: string;
-  image: File | string;
+  image: File | string | null;
 }
 
 declare interface Order {

@@ -3,8 +3,7 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 
-const DisplayProducts = ({ products, from=0, to=0 }: { products: Array<{ [key: string]}>, from: number, to: number }) => {
-
+const DisplayProducts = ({ products, from=0, to=0 }) => {
 
   if(!products || products?.length === 0){
     return <div className='flex-center h-fill'>
