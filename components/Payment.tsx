@@ -1,4 +1,9 @@
-"use client"
+"use client";
+
+import  { useEffect } from "react";
+import { useRouter } from "next/navigation"; 
+import { verifyPayment } from "@/lib/actions/payment.action";
+import { useToast } from "@/hooks/use-toast";
 
 interface PaymentProps {
   address: string;
@@ -9,16 +14,12 @@ interface PaymentProps {
     price: number;
     orderId: string;
   };
-  close: ()=>void;
+  close: () => void; 
 }
 
-import React, { useEffect } from 'react';
-import { verifyPayment } from '@/lib/actions/payment.action';
-import { useToast } from '@/hooks/use-toast'; 
-
 const Payment = ({ orderDetails, address, close }: PaymentProps) => {
-
-  const {toast} = useToast();
+  const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     const loadRazorpayScript = () => {
@@ -35,57 +36,64 @@ const Payment = ({ orderDetails, address, close }: PaymentProps) => {
     loadRazorpayScript()
       .then(() => {
         const options = {
-          key: `${process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID}`,
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
           amount: orderDetails.price * 100,
-          currency: 'INR',
-          name: 'LUMITSS',
+          currency: "INR",
+          name: "LUMITSS",
           description: "Seamless Shopping Experience at LUMITSS – Your Trusted Online Store for Quality Products",
-          image: '/lumitss.png',
+          image: "/lumitss.png",
           order_id: orderDetails.orderId,
-          handler: async function(response) {
-            rzp.close();
-            close();
+          handler: async function (response) {
+    
             const responseObject = {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature
+              razorpay_signature: response.razorpay_signature,
+            };
+        
+            const verificationResult = await verifyPayment(responseObject, orderDetails, address);
+            if (verificationResult.success) {
+              toast({
+                title: "Payment Successful",
+              });
+              window.location.replace("/user/orders");
+            } else {
+              alert("Payment verification failded.")
             }
 
-            window.location.href="/user/Processing?status=pending"
-            const verificationResult = await verifyPayment(responseObject, orderDetails, address)
-            if(verificationResult.success){
-              close();
-              toast({
-                title: "Payment Successfully"
-              });
-              window.location.replace("/user/Processing?status=success");
-            }else{
-              close();
-              window.location.replace("/user/Processing?status=failure");
-            }
+            
             close();
+          },
+          modal: {
+            ondismiss: function () {
+              console.log("Payment popup closed by user.");
+              close(); 
+            },
           },
         };
 
         const rzp = new window.Razorpay(options);
-        rzp.open();
+        rzp.open(); 
+    
+        return () => {
+          if (rzp) rzp.close();
+        };
       })
       .catch((error) => {
-        console.error('Razorpay script failed to load', error);
-        alert('Something went wrong while loading the payment gateway. Please try again later.');
+        console.error("Razorpay script failed to load", error);
+        alert("Something went wrong while loading the payment gateway. Please try again later.");
       });
 
+    
     return () => {
-      // Cleanup script if needed
       const script = document.querySelector('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
       if (script) {
         document.body.removeChild(script);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderDetails, address]);
+  }, [orderDetails, address, close, router, toast]);
 
-  return <div></div>;
+  return null; 
 };
 
 export default Payment;
