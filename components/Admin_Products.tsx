@@ -1,20 +1,23 @@
 "use client";
 
 import { getAllProducts } from '@/lib/actions/product.action';
-import { CircleArrowUpIcon, CirclePlus } from 'lucide-react';
+import { CircleArrowUpIcon, CirclePlus, Upload } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import ProductHandler from './ProductsHandler';
 import { Button } from './ui/button';
 import { fetchUserDetails } from '@/lib/serverAction';
 import Loading from './Loader';
+import UploadImages from './UploadImages';
 
 const Admin_Products: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [showAddProduct, setShowAddProduct] = useState<boolean>(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
-  const [productCount, setProductCount] = useState(0)
+  const [productCount, setProductCount] = useState(0);
+  const [uploadImage, setUploadImage] = useState<boolean>(false);
+  const [imageId, setImage] = useState<string>("")
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,6 +47,11 @@ const Admin_Products: React.FC = () => {
     setCurrentProduct(product);
     setShowAddProduct(true);
   };
+
+  const handleUploadImages = (id)=>{
+    setUploadImage(true);
+    setImage(id)
+  }
 
   return (
     <div>
@@ -91,8 +99,9 @@ const Admin_Products: React.FC = () => {
               <li className="col-span-1 text-[1vw]">{product.price}</li>
               <li className="col-span-3 text-[1vw]">{product.productDetails}</li>
               <li className="col-span-2 text-[1vw]">{product.category}</li>
-              <li className="col-span-1 text-[1vw]">
-              <CircleArrowUpIcon onClick={() => handleUpdateProductClick(product)} className='!w-[2.5vw]'/>
+              <li className="col-span-1 text-[1vw] flex-center gap-4">
+              <CircleArrowUpIcon onClick={() => handleUpdateProductClick(product)} className='!w-[2.5vw] cursor-pointer'/>
+              <Upload className='cursor-pointer' onClick={()=> handleUploadImages(product?.$id) }/>
               </li>
             </ul>
           ))}
@@ -106,6 +115,10 @@ const Admin_Products: React.FC = () => {
         setCount={setProductCount}
         productData={currentProduct}
       />
+
+      {uploadImage && (
+        <UploadImages imageId={imageId} closePopUp={()=>setUploadImage(false)}/>
+      )}
     </div>
   );
 };

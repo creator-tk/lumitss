@@ -7,6 +7,7 @@ export const appWriteConfig = {
   bucketId: process.env.NEXT_PUBLIC_APPWRITE_BUCKET!,
   secretKey: process.env.NEXT_APPWRITE_SECRET!,
   functionId: process.env.NEXT_PUBLIC_FUNCTION_ID!,
+  imageCollectionId: process.env.NEXT_PUBLIC_IMAGE_COLLECTIONS!
 }
 
 export const razorpayConfig = {

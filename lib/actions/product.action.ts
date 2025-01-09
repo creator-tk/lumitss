@@ -7,7 +7,6 @@ import { constructImageUrl, parseStringify } from "../utils";
 import { handleError } from "./user.action";
 import { InputFile } from "node-appwrite/file";
 import { getCurrentUser } from "./user.action";
-// import razorpay from "razorpay";
 
 // Fetch all products
 export const getAllProducts = async () => {
@@ -438,5 +437,57 @@ export const updateProductDetails = async (
   }
 };
 
+
+export const uploadImages = async (imageId:string, image:File) => {
+  const {storage, databases} = await serverAction();
+  let uploadedImage;
+  try {
+    if(image instanceof File){
+      const inputFile = InputFile.fromBuffer(image as unknow as Buffer, image.name);
+
+      uploadedImage = await storage.createFile(
+        appWriteConfig.bucketId,
+        ID.unique(),
+        inputFile
+      );
+    }else{
+      throw new Error("Image is not a valid File");
+    }
+
+    const imageDocument = {
+      relatedWith: imageId,
+      image: constructImageUrl(uploadedImage.$id)
+    }
+
+    const response = await databases.createDocument(
+      appWriteConfig.databaseId,
+      appWriteConfig.imageCollectionId,
+      ID.unique(),
+      imageDocument
+    )
+    
+    if(response){
+      return {
+        success:true,
+        message: "Image uploaded Successfully"
+      }
+    }else{
+      return{
+        success:false,
+        message:"failded to upload"
+      }
+    }
+
+  } catch (error) {
+    if(uploadImages){
+      await storage.deleteFile(appWriteConfig.bucketId, uploadedImage.$id);
+    }
+    console.log("Error to uploadImage:",error.message)
+    return{
+      success:false,
+      message:"Unexcepted thing happened"
+    }
+  }
+}
 
 
