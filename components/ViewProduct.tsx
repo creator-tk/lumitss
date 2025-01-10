@@ -1,4 +1,4 @@
-import { getProducts } from "@/lib/actions/product.action";
+import { getProducts, getRelatedImges } from "@/lib/actions/product.action";
 import Image from "next/image";
 import React from "react";
 import { ActionButton } from "@/components/ActionButton";
@@ -14,10 +14,12 @@ interface ViewProductProps {
 const ViewProduct: React.FC<ViewProductProps> = async ({ productId }) => {
   let product: Product | null = null;
   let relatedProducts: Product | null = null; 
+  let relatedImages;
 
   try {
     product = await getProducts("viewProduct", productId);
-    relatedProducts = await getProducts("all")
+    relatedProducts = await getProducts("all");
+    relatedImages = await getRelatedImges(productId);  
   } catch (error: unknown) {
     console.error("Failed to fetch product:", (error as Error).message);
   }
@@ -69,6 +71,20 @@ const ViewProduct: React.FC<ViewProductProps> = async ({ productId }) => {
           </div>
         </div>
       </div>
+      <hr className="my-16"/>
+      <div className="flex flex-shrink-0 gap-[1px]">
+        {relatedImages && relatedImages.data.map(each => (
+          <Image
+            key={each.$id}
+            src={each.image}
+            alt="Product related images"
+            width={200}
+            height={200}
+            className="w-[400px] h-[300px]"
+          />
+        ))}
+      </div>
+
 
       <hr className="my-12"/>
       <h1 className="text-xl my-4">Products You might like:</h1>
