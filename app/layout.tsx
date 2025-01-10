@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AmazingCart",
+  title: "LUMITSS",
   description: "Get all you nessarys at lowest prices",
 };
 
