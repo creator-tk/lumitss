@@ -491,3 +491,25 @@ export const uploadImages = async (imageId:string, image:File) => {
 }
 
 
+//get Related Images
+export const getRelatedImges = async (productId:string)=>{
+  const {databases} = await serverAction();
+  console.log("ProductId from relatedImages,:", productId)
+  try {
+    const  response = await databases.listDocuments(
+      appWriteConfig.databaseId,
+      appWriteConfig.imageCollectionId,
+      [Query.equal("relatedWith", productId)]
+    )
+    return {
+      success:true,
+      data:response.documents
+    }
+  } catch (error) {
+    console.log("Error occured while fetching related Images:", error.message);
+    return {
+      success:false,
+      message: "Some thing went wrong.!"
+    }
+  }
+}
