@@ -62,7 +62,7 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className="lg:grid grid-cols-12 mb-6 lg:px-[15%] px-[2%]">
+      <header className="lg:grid grid-cols-12 mb-6 lg:px-[15%] px-[2%] justify-center items-center gap-4">
         <Link href="/" className="col-span-3" onClick={()=>setCategory("")}>
         <div className="lg:w-auto w-[100%] flex justify-center items-center sm:relative">
           <Image
