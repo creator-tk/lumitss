@@ -1,1 +1,1 @@
-All products you need buy at one place amazingCart.
+All products you need buy at one place LUMITSS.
