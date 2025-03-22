@@ -13,7 +13,7 @@ const FlipCardAnimation = ({ text, interval = 3000 }) => {
       const formatDate = (date) => {
         const parts = date.split('/'); 
 
-        const formattedDate = parts.map(part => part.length === 1 ? `0${part}` : part); 
+        const formattedDate = parts.map(part => part.padStart(2, '0')) 
         
         return formattedDate.join('-');
       };

@@ -49,7 +49,7 @@ export const verifyPayment = async (responseObject: paymentResponseProps, orderD
 
     // Handle address fallback if location is invalid
     let updatedAddress = location;
-    if (!location || Object.keys(location).length === 0) {  // Check for null or empty object
+    if (!location || Object.keys(location).length === 0) { 
       updatedAddress = address;
     }
 
@@ -59,7 +59,7 @@ export const verifyPayment = async (responseObject: paymentResponseProps, orderD
     if (response?.success) {
       console.log(response.message);
     } else {
-      console.log("Something went wrong, please check the code.");
+      console.log("Something went wrong while placing the order.");
     }
 
     return {
