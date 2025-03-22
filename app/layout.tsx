@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "LUMITSS",
-  description: "Get all you nessarys at lowest prices",
+  description: "Get all you necessary at lowest prices",
 };
 
 export default function RootLayout({

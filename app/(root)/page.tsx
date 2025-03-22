@@ -35,7 +35,7 @@ export default async function Home() {
       {/**Products */}
       <div className="lg:px-[15%] px-[5%] text-3xl mb-12">
         <h1 className="my-8"><b>Trending Right Now</b></h1>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 ">
+        <div className="grid grid-cols-2 lg:grid-cols-4 sm:gap-8 gap-2">
           {products.slice(0,4).map((eachProduct: Product) => (
             <div
               key={eachProduct.$id}
@@ -64,11 +64,11 @@ export default async function Home() {
                   <span className="text-lg">Rs: {eachProduct.price}/-</span> <span className="line-through text-sm">Rs: {eachProduct.price*1.5}</span>
                 </p>
                 <div className="flex gap-2">
-                  <Star/>
-                  <Star/>
-                  <Star/>
-                  <Star/>
-                  <Star/>
+                  <Star className="fill-black"/>
+                  <Star className="fill-black"/>
+                  <Star className="fill-black"/>
+                  <Star className="fill-black"/>
+                  <Star className="fill-black"/>
                 </div>
               </div>
             </div>
@@ -88,7 +88,7 @@ export default async function Home() {
         <h1 className="my-8"><b>
           Check Our All Collections
         </b></h1>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 sm:gap-8 gap-2">
           {products.slice(4,8).map((eachProduct:Product) => (
             <div
               key={eachProduct.$id}
@@ -117,11 +117,11 @@ export default async function Home() {
                   <span className="lg:text-lg text-md">Rs: {eachProduct.price}/-</span> <span className="line-through text-sm">Rs: {eachProduct.price*1.5}</span>
                 </p>
                 <div className="flex gap-2">
-                  <Star/>
-                  <Star/>
-                  <Star/>
-                  <Star/>
-                  <Star/>
+                  <Star className="fill-black"/>
+                  <Star className="fill-black"/>
+                  <Star className="fill-black"/>
+                  <Star className="fill-black"/>
+                  <Star className="fill-black"/>
                 </div>
               </div>
             </div>
@@ -132,8 +132,11 @@ export default async function Home() {
       {/**Animation */}
       <div className="lg:px-[15%] px-[5%] flex-center flex-col">
         <h1 className="text-center text-5xl my-8"><b>Limited Time!</b></h1>
+        <div className="flex justify-center border-2 w-full overflow-hidden">
         <FlipCartAnimation text={[" SALE ON. ", new Date().toLocaleDateString()]}
-        interval={3000} />
+          interval={3000} />
+        </div>
+
         <p className="text-center">Our limited time 50% off sale is ending in few days..</p>
       </div>
     </main>

@@ -33,7 +33,7 @@ const FlipCardAnimation = ({ text, interval = 3000 }) => {
   
 
   const renderDiv = (char, index) => (
-    <div key={index} className="bg-black lg:rounded-xl h-[40px] w-[40px] sm:h-[80px] sm:w-[80px] flex-center flex-col relative rounded-md">
+    <div key={index} className="bg-black lg:rounded-xl h-[38px] w-[38px] sm:h-[80px] sm:w-[80px] flex-center flex-col relative rounded-md">
 
       <div className=" w-full h-full overflow-hidden bg-gray-6
       00 rounded-xl flex-center">
@@ -49,8 +49,8 @@ const FlipCardAnimation = ({ text, interval = 3000 }) => {
   );
 
   return (
-    <div className="flex-center w-[100%] ">
-      <div className="bg-white rounded-xl grid grid-cols-11 md:gap justify-items-center align-items-center mb-6 gap-4 ">
+    <div className="flex-center w-full">
+      <div className="bg-white rounded-xl grid grid-cols-11 justify-items-center align-items-center sm:gap-4 gap-0 m-0 ml-6 sm:ml-0">
         {displayedText.split("").slice(0, 11).map((char, index) => renderDiv(char, index))}
       </div>
     </div>
