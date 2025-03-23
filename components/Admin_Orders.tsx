@@ -87,12 +87,12 @@ const AdminOrders = () => {
         className="mb-4 p-2 border rounded"
         onChange={onChangeHandler}
       />
-      <ul className="grid grid-cols-10">
-        <li className="col-span-1 font-bold text-xl">UserName</li>
-        <li className="col-span-3 font-bold text-xl">Address</li>
-        <li className="col-span-1 font-bold text-xl">Order Date</li>
-        <li className="col-span-3 font-bold text-xl">Product Details</li>
-        <li className="col-span-1 font-bold text-xl">Quantity</li>
+      <ul className="grid grid-cols-10 overflow-auto gap-2 min-w-[800px]">
+        <li className="col-span-1 font-bold sm:text-xl">UserName</li>
+        <li className="col-span-3 font-bold sm:text-xl">Address</li>
+        <li className="col-span-1 font-bold sm:text-xl">Order Date</li>
+        <li className="col-span-3 font-bold sm:text-xl">Product Details</li>
+        <li className="col-span-1 font-bold sm:text-xl">Quantity</li>
         <li className="col-span-1 font-bold text-xl">Order Status</li>
       </ul>
 
@@ -101,7 +101,7 @@ const AdminOrders = () => {
       ) : orders.length > 0 ? (
         orders.map((eachOrder, index) => {
           return (
-            <ul key={index} className="grid grid-cols-10 gap-4 my-4">
+            <ul key={index} className="grid grid-cols-10 sm:gap-4 my-4 overflow-auto gap-2 min-w-[800px]">
               <li className="col-span-1">{eachOrder?.userName || "Unknown User"}</li>
               <li className="col-span-3 truncate">
                 {eachOrder?.address || "No Address Available"}
